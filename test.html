@@ -139,5 +139,37 @@ App.sync.syncNow().then(function (result) {
   });
 });
 </script>
+<script>
+const items = [
+  { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 1000 },
+  { proveedor: 'ACME', marca: 'FORD', repuesto: 'AXIALES', precio: 200 },
+  { proveedor: 'OTRO', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 50 },
+];
+const providersList = [
+  { id: 'p1', nombre: 'ACME', descuentoEfectivoPercent: 40, descuentoProntoPagoPercent: 0, descuentosAcumulables: false, montoMinimo: 300, tasaTipo: 'BCV_USD' },
+];
+const ratesObj = { BCV_USD: 40 };
+
+const resultado = App.search.filterAndCalculate(items, providersList, ratesObj, {
+  texto: 'piston', marca: '', aplicarEfectivo: true, aplicarProntoPago: false,
+});
+assertEqual(resultado.length, 1, 'search.filterAndCalculate: text filter matches PISTONES, excludes AXIALES, excludes unmatched provider OTRO');
+assertEqual(resultado[0].precioFinalUSD, 600, 'search.filterAndCalculate applies calculator discount to filtered item');
+
+const resultadoMarca = App.search.filterAndCalculate(items, providersList, ratesObj, {
+  texto: '', marca: 'FORD', aplicarEfectivo: false, aplicarProntoPago: false,
+});
+assertEqual(resultadoMarca.length, 1, 'search.filterAndCalculate: marca filter matches only FORD item');
+
+const resultadoOrden = App.search.filterAndCalculate(
+  [
+    { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 1000 },
+    { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 100 },
+  ],
+  providersList, ratesObj, { texto: '', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
+);
+assertEqual(resultadoOrden[0].precioFinalUSD, 100, 'search.filterAndCalculate sorts ascending by precioFinalUSD');
+renderAssertions();
+</script>
 </body>
 </html>
