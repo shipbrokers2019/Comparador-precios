@@ -74,5 +74,13 @@ App.providers.remove(p1.id);
 assertEqual(App.providers.getAll().length, 0, 'providers.remove deletes provider');
 renderAssertions();
 </script>
+<script>
+assertEqual(App.rates.get().BCV_USD, undefined, 'rates.get returns empty object before first set');
+App.rates.set({ BCV_USD: 40, BCV_EUR: 43, BINANCE: 39.5 });
+const r = App.rates.get();
+assertEqual(r.BCV_USD, 40, 'rates.set/get stores BCV_USD');
+assertEqual(typeof r.updatedAt, 'string', 'rates.set stamps updatedAt');
+renderAssertions();
+</script>
 </body>
 </html>
