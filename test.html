@@ -171,5 +171,17 @@ const resultadoOrden = App.search.filterAndCalculate(
 assertEqual(resultadoOrden[0].precioFinalUSD, 100, 'search.filterAndCalculate sorts ascending by precioFinalUSD');
 renderAssertions();
 </script>
+<script src="js/export.js"></script>
+<script>
+const filas = App.export.buildRows([
+  { proveedor: 'ACME', repuesto: 'PISTONES', marca: 'CHEVROLET', precioOriginal: 1000, descuentosAplicados: 'Efectivo 40%', tasaAplicada: 40, precioFinalUSD: 600, cumpleMinimo: true },
+]);
+assertEqual(filas[0], {
+  Proveedor: 'ACME', Repuesto: 'PISTONES', Marca: 'CHEVROLET',
+  'Precio original': 1000, Descuentos: 'Efectivo 40%', 'Tasa aplicada': 40,
+  'Precio final': 600, 'Cumple mínimo': 'Sí',
+}, 'export.buildRows maps a result row to the expected Excel column shape');
+renderAssertions();
+</script>
 </body>
 </html>
