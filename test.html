@@ -82,5 +82,33 @@ assertEqual(r.BCV_USD, 40, 'rates.set/get stores BCV_USD');
 assertEqual(typeof r.updatedAt, 'string', 'rates.set stamps updatedAt');
 renderAssertions();
 </script>
+<script>
+const provider = {
+  descuentoEfectivoPercent: 40, descuentoProntoPagoPercent: 15,
+  descuentosAcumulables: true, montoMinimo: 300, tasaTipo: 'BCV_USD',
+};
+const rates = { BCV_USD: 40 };
+
+const r1 = App.calculator.calculateFinalPrice(1000, provider, rates, { aplicarEfectivo: false, aplicarProntoPago: false });
+assertEqual(r1.precioFinalUSD, 1000, 'calculator: no discounts leaves price unchanged');
+assertEqual(r1.cumpleMinimo, true, 'calculator: 1000 >= minimo 300 cumple');
+assertEqual(r1.descuentosAplicados, 'Ninguno', 'calculator: label is Ninguno with no discounts');
+
+const r2 = App.calculator.calculateFinalPrice(1000, provider, rates, { aplicarEfectivo: true, aplicarProntoPago: false });
+assertEqual(r2.precioFinalUSD, 600, 'calculator: 40% cash discount applied');
+
+const r3 = App.calculator.calculateFinalPrice(1000, provider, rates, { aplicarEfectivo: true, aplicarProntoPago: true });
+assertEqual(r3.precioFinalUSD, 510, 'calculator: cumulative 40% then 15% compounds to 510');
+assertEqual(r3.tasaAplicada, 40, 'calculator: uses BCV_USD rate from provider.tasaTipo');
+assertEqual(r3.precioFinalBs, 20400, 'calculator: precioFinalBs = precioFinalUSD * tasaAplicada');
+
+const providerNoAcumula = { ...provider, descuentosAcumulables: false };
+const r4 = App.calculator.calculateFinalPrice(1000, providerNoAcumula, rates, { aplicarEfectivo: true, aplicarProntoPago: true });
+assertEqual(r4.precioFinalUSD, 600, 'calculator: non-cumulative discounts uses only the larger one');
+
+const r5 = App.calculator.calculateFinalPrice(100, provider, rates, { aplicarEfectivo: false, aplicarProntoPago: false });
+assertEqual(r5.cumpleMinimo, false, 'calculator: 100 < minimo 300 no cumple');
+renderAssertions();
+</script>
 </body>
 </html>
