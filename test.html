@@ -35,5 +35,11 @@ function renderAssertions() {
   ul.prepend(summary);
 }
 </script>
+<script>
+App.storage.set(App.storage.KEYS.TASAS, { BCV_USD: 40 });
+assertEqual(App.storage.get(App.storage.KEYS.TASAS, {}), { BCV_USD: 40 }, 'storage.set/get round-trip');
+assertEqual(App.storage.get('clave_inexistente', 'default'), 'default', 'storage.get default value');
+renderAssertions();
+</script>
 </body>
 </html>
