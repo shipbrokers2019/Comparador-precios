@@ -60,5 +60,19 @@ assertEqual(item.marcaNormalizada, true, 'normalizeItem flags marca as normalize
 assertEqual(item.repuestoNormalizado, false, 'normalizeItem flags unmatched repuesto');
 renderAssertions();
 </script>
+<script>
+const p1 = App.providers.upsert({
+  nombre: 'ACME', descuentoEfectivoPercent: 40, descuentoProntoPagoPercent: 15,
+  diasProntoPago: 30, descuentosAcumulables: true, montoMinimo: 300, tasaTipo: 'BCV_USD',
+});
+assertEqual(App.providers.getAll().length, 1, 'providers.upsert creates a new provider');
+assertEqual(App.providers.getById(p1.id).nombre, 'ACME', 'providers.getById finds provider');
+App.providers.upsert({ ...p1, nombre: 'ACME RENAMED' });
+assertEqual(App.providers.getAll().length, 1, 'providers.upsert updates instead of duplicating');
+assertEqual(App.providers.getById(p1.id).nombre, 'ACME RENAMED', 'providers.upsert applies the update');
+App.providers.remove(p1.id);
+assertEqual(App.providers.getAll().length, 0, 'providers.remove deletes provider');
+renderAssertions();
+</script>
 </body>
 </html>
