@@ -41,5 +41,24 @@ assertEqual(App.storage.get(App.storage.KEYS.TASAS, {}), { BCV_USD: 40 }, 'stora
 assertEqual(App.storage.get('clave_inexistente', 'default'), 'default', 'storage.get default value');
 renderAssertions();
 </script>
+<script>
+App.dictionaries.addSynonym('marca', 'CHE', 'CHEVROLET');
+App.dictionaries.addSynonym('marca', 'CHEV', 'CHEVROLET');
+assertEqual(
+  App.dictionaries.normalizeTerm('che', App.dictionaries.getAll().marca),
+  { value: 'CHEVROLET', matched: true },
+  'normalizeTerm matches case-insensitive exact alias'
+);
+assertEqual(
+  App.dictionaries.normalizeTerm('MAZDA', App.dictionaries.getAll().marca),
+  { value: 'MAZDA', matched: false },
+  'normalizeTerm returns original + matched:false when no alias found'
+);
+const item = App.dictionaries.normalizeItem({ proveedor: 'ACME', marca: 'CHE', repuesto: 'RADIADOR', precio: 10 });
+assertEqual(item.marca, 'CHEVROLET', 'normalizeItem normalizes marca');
+assertEqual(item.marcaNormalizada, true, 'normalizeItem flags marca as normalized');
+assertEqual(item.repuestoNormalizado, false, 'normalizeItem flags unmatched repuesto');
+renderAssertions();
+</script>
 </body>
 </html>
