@@ -270,11 +270,11 @@ assertEqual(
   'normalizeTerm matches case-insensitive exact alias'
 );
 assertEqual(
-  App.dictionaries.normalizeTerm('TOYOTA', App.dictionaries.getAll().marca),
-  { value: 'TOYOTA', matched: false },
+  App.dictionaries.normalizeTerm('MAZDA', App.dictionaries.getAll().marca),
+  { value: 'MAZDA', matched: false },
   'normalizeTerm returns original + matched:false when no alias found'
 );
-const item = App.dictionaries.normalizeItem({ proveedor: 'ACME', marca: 'CHE', repuesto: 'PISTON', precio: 10 });
+const item = App.dictionaries.normalizeItem({ proveedor: 'ACME', marca: 'CHE', repuesto: 'RADIADOR', precio: 10 });
 assertEqual(item.marca, 'CHEVROLET', 'normalizeItem normalizes marca');
 assertEqual(item.marcaNormalizada, true, 'normalizeItem flags marca as normalized');
 assertEqual(item.repuestoNormalizado, false, 'normalizeItem flags unmatched repuesto');
