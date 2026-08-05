@@ -110,5 +110,34 @@ const r5 = App.calculator.calculateFinalPrice(100, provider, rates, { aplicarEfe
 assertEqual(r5.cumpleMinimo, false, 'calculator: 100 < minimo 300 no cumple');
 renderAssertions();
 </script>
+<script>
+// Stub fetch to avoid a real network call in the test harness.
+window.fetch = function (url) {
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve([
+      { proveedor: 'ACME', filas: [{ marca: 'CHE', repuesto: 'PISTON', precio: 100 }] },
+    ]),
+  });
+};
+
+App.sync.setWebAppUrl('https://example.com/exec');
+App.sync.syncNow().then(function (result) {
+  assertEqual(result.ok, true, 'sync.syncNow resolves ok:true on successful fetch');
+  assertEqual(result.itemCount, 1, 'sync.syncNow reports the flattened item count');
+  const items = App.sync.getCachedItems();
+  assertEqual(items.length, 1, 'sync.getCachedItems returns the stored items');
+  assertEqual(items[0].marca, 'CHEVROLET', 'sync.getCachedItems items are normalized');
+  assertEqual(items[0].proveedor, 'ACME', 'sync.getCachedItems keeps proveedor name');
+
+  // Now simulate offline: fetch rejects, cache must survive untouched.
+  window.fetch = function () { return Promise.reject(new Error('offline')); };
+  App.sync.syncNow().then(function (offlineResult) {
+    assertEqual(offlineResult.ok, false, 'sync.syncNow resolves ok:false when fetch fails');
+    assertEqual(App.sync.getCachedItems().length, 1, 'sync.syncNow keeps old cache on failure');
+    renderAssertions();
+  });
+});
+</script>
 </body>
 </html>
