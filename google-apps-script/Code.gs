@@ -104,7 +104,7 @@ function filasDesdeValores(values) {
   var filas = [];
   for (var i = startRow; i < values.length; i++) {
     var fila = values[i];
-    var marca = fila[columnas.marca];
+    var marca = columnas.marca !== -1 ? fila[columnas.marca] : '';
     var repuesto = fila[columnas.repuesto];
     var precio = fila[columnas.precio];
     // Skip rows with no usable price: section titles and repeated header
@@ -120,6 +120,13 @@ function filasDesdeValores(values) {
   return filas;
 }
 
+// Real column headers are short words ("Código", "Descripción", "Precio2
+// $"). Title rows and company names are long sentences that can
+// accidentally contain a header word (e.g. "REPUESTOS Y FILTROS
+// VENEZOLANOS C.A" contains "repuesto"). Ignoring long cells when matching
+// avoids mistaking a title row for the real header row.
+var LARGO_MAXIMO_ENCABEZADO = 30;
+
 function detectarColumnas(headerRow) {
   var indices = { marca: -1, repuesto: -1, precio: -1 };
   Object.keys(HEADER_ALIASES).forEach(function (campo) {
@@ -127,13 +134,29 @@ function detectarColumnas(headerRow) {
       for (var i = 0; i < headerRow.length; i++) {
         // Substring match: a header cell like "precio pvp" should still
         // count as the "precio" column, not just an exact "precio" cell.
-        if (indices[campo] === -1 && headerRow[i].indexOf(alias) !== -1) {
+        if (
+          indices[campo] === -1 &&
+          headerRow[i].length <= LARGO_MAXIMO_ENCABEZADO &&
+          headerRow[i].indexOf(alias) !== -1
+        ) {
           indices[campo] = i;
         }
       }
     });
   });
 
-  var encontradasPorNombre = indices.marca !== -1 && indices.repuesto !== -1 && indices.precio !== -1;
+  // Extra safety: repuesto and precio must be different columns. If a
+  // single cell matched both (another symptom of a title row slipping
+  // through), this row cannot be a real header.
+  if (indices.repuesto !== -1 && indices.repuesto === indices.precio) {
+    indices.repuesto = -1;
+    indices.precio = -1;
+  }
+
+  // Marca is optional: some real supplier files have no vehicle-brand
+  // column at all (just código/descripción/precio). Requiring it would
+  // force those files into the wrong-columns positional fallback instead
+  // of correctly reading their real repuesto/precio columns.
+  var encontradasPorNombre = indices.repuesto !== -1 && indices.precio !== -1;
   return { marca: indices.marca, repuesto: indices.repuesto, precio: indices.precio, encontradasPorNombre: encontradasPorNombre };
 }
