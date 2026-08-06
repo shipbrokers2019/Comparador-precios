@@ -14,6 +14,7 @@
         — Efectivo ${p.descuentoEfectivoPercent}% / Pronto pago ${p.descuentoProntoPagoPercent}%
         (${p.descuentosAcumulables ? 'acumulables' : 'excluyentes'})
         — Mínimo $${p.montoMinimo} — Tasa: ${escapeHtml(p.tasaTipo)}
+        <button type="button" data-borrar-proveedor="${escapeHtml(p.id)}">Borrar</button>
       </div>`).join('') +
       '<form id="form-proveedor">' +
       '<input name="nombre" placeholder="Proveedor" required>' +
@@ -38,6 +39,14 @@
       });
       renderProvidersPanel();
       renderResults();
+    });
+
+    panel.querySelectorAll('[data-borrar-proveedor]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        App.providers.remove(btn.getAttribute('data-borrar-proveedor'));
+        renderProvidersPanel();
+        renderResults();
+      });
     });
   }
 
