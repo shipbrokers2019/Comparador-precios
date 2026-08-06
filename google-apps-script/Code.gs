@@ -3,9 +3,9 @@
 
 var FOLDER_NAME = 'LISTAS A EVALUAR';
 var HEADER_ALIASES = {
-  marca: ['marca', 'make'],
+  marca: ['marca', 'make', 'vehiculo', 'vehículo'],
   repuesto: ['repuesto', 'descripcion', 'descripción', 'nombre', 'producto'],
-  precio: ['precio', 'price', 'valor'],
+  precio: ['precio', 'price', 'valor', 'pvp'],
 };
 // How many of the file's leading rows to scan looking for the header row.
 // Real supplier price lists often have a few title/logo rows before the
