@@ -24,7 +24,7 @@ function doGet(e) {
 
     while (files.hasNext()) {
       var file = files.next();
-      var nombreProveedor = file.getName().replace(/\.(xlsx|csv|xls)$/i, '');
+      var nombreProveedor = file.getName().replace(/\.(xlsx|csv|xls)$/i, '').trim();
       var filas = leerArchivoComoFilas(file);
       resultado.push({ proveedor: nombreProveedor, filas: filas });
     }

@@ -30,7 +30,7 @@
       ev.preventDefault();
       const fd = new FormData(ev.target);
       App.providers.upsert({
-        nombre: fd.get('nombre'),
+        nombre: fd.get('nombre').trim(),
         descuentoEfectivoPercent: Number(fd.get('descuentoEfectivoPercent')),
         descuentoProntoPagoPercent: Number(fd.get('descuentoProntoPagoPercent')),
         descuentosAcumulables: fd.get('descuentosAcumulables') === 'on',

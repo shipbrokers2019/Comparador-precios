@@ -12,7 +12,7 @@
     const conCalculo = [];
     const proveedoresSinTasa = new Set();
     filtrados.forEach((item) => {
-      const provider = providersList.find((p) => p.nombre === item.proveedor);
+      const provider = providersList.find((p) => (p.nombre || '').trim() === (item.proveedor || '').trim());
       if (!provider) return;
       const calculo = App.calculator.calculateFinalPrice(item.precio, provider, rates, {
         aplicarEfectivo: opciones.aplicarEfectivo,
