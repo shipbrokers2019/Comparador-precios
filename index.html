@@ -7,38 +7,57 @@
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>Comparador de Precios</h1>
-    <div id="sync-status">Sin sincronizar</div>
-    <button id="btn-sync">Sincronizar</button>
-    <input type="text" id="input-webapp-url" placeholder="URL de Apps Script (/exec)">
-    <button id="btn-guardar-url">Guardar URL</button>
-  </header>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1>Comparador de Precios</h1>
+        <span class="status-pill" id="sync-status-pill"><span class="status-dot"></span><span id="sync-status">Sin sincronizar</span></span>
+      </div>
+      <button class="btn btn-primary btn-sm" id="btn-sync">Sincronizar</button>
+    </header>
 
-  <section id="panel-tasas"></section>
-  <section id="panel-proveedores"></section>
+    <section class="card">
+      <h2>Conexión</h2>
+      <div class="field-row">
+        <input class="field" type="text" id="input-webapp-url" placeholder="URL de Apps Script (/exec)">
+        <button class="btn btn-secondary" id="btn-guardar-url">Guardar URL</button>
+      </div>
+    </section>
 
-  <section id="panel-busqueda">
-    <input type="text" id="filtro-texto" placeholder="Buscar repuesto...">
-    <select id="filtro-marca"><option value="">Todas las marcas</option></select>
-    <label><input type="checkbox" id="chk-efectivo"> Descuento efectivo</label>
-    <label><input type="checkbox" id="chk-pronto-pago"> Pronto pago</label>
-  </section>
+    <section class="card" id="panel-tasas"></section>
+    <section class="card" id="panel-proveedores"></section>
 
-  <section id="panel-resultados">
-    <div id="aviso-tasas-faltantes" style="display:none;"></div>
-    <table id="tabla-resultados">
-      <thead>
-        <tr>
-          <th>Proveedor</th><th>Repuesto</th><th>Marca</th>
-          <th>Precio orig.</th><th>Descuentos</th><th>Tasa</th>
-          <th>Precio final</th><th>Precio final (Bs)</th><th>Mínimo</th>
-        </tr>
-      </thead>
-      <tbody id="tbody-resultados"></tbody>
-    </table>
-    <button id="btn-exportar">Exportar a Excel</button>
-  </section>
+    <section class="card" id="panel-busqueda">
+      <h2>Buscar y comparar</h2>
+      <div class="search-bar">
+        <input class="field" type="text" id="filtro-texto" placeholder="Buscar repuesto...">
+        <select class="field" id="filtro-marca"><option value="">Todas las marcas</option></select>
+      </div>
+      <div class="toggle-row">
+        <label class="checkbox-field"><input type="checkbox" id="chk-efectivo"> Descuento efectivo</label>
+        <label class="checkbox-field"><input type="checkbox" id="chk-pronto-pago"> Pronto pago</label>
+      </div>
+    </section>
+
+    <section id="panel-resultados">
+      <div class="notice" id="aviso-tasas-faltantes"></div>
+      <div class="table-scroll">
+        <table id="tabla-resultados">
+          <thead>
+            <tr>
+              <th>Proveedor</th><th>Repuesto</th><th>Marca</th>
+              <th>Precio orig.</th><th>Descuentos</th><th>Tasa</th>
+              <th>Precio final</th><th>Precio final (Bs)</th><th>Mínimo</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-resultados"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <button class="btn btn-secondary" id="btn-exportar">Exportar a Excel</button>
+      </div>
+    </section>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>window.App = {};</script>

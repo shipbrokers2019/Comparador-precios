@@ -5,25 +5,35 @@
     return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  function setStatusPill(text, state) {
+    const pill = document.getElementById('sync-status-pill');
+    document.getElementById('sync-status').textContent = text;
+    pill.classList.remove('is-ok', 'is-error', 'is-busy');
+    if (state) pill.classList.add(state);
+  }
+
   function renderProvidersPanel() {
     const panel = document.getElementById('panel-proveedores');
     const providers = App.providers.getAll();
-    panel.innerHTML = '<h2>Proveedores</h2>' + providers.map((p) => `
-      <div>
-        <strong>${escapeHtml(p.nombre)}</strong>
-        — Efectivo ${p.descuentoEfectivoPercent}% / Pronto pago ${p.descuentoProntoPagoPercent}%
-        (${p.descuentosAcumulables ? 'acumulables' : 'excluyentes'})
-        — Mínimo $${p.montoMinimo} — Tasa: ${escapeHtml(p.tasaTipo)}
-        <button type="button" data-borrar-proveedor="${escapeHtml(p.id)}">Borrar</button>
-      </div>`).join('') +
-      '<form id="form-proveedor">' +
-      '<input name="nombre" placeholder="Proveedor" required>' +
-      '<input name="descuentoEfectivoPercent" type="number" placeholder="% efectivo" value="0">' +
-      '<input name="descuentoProntoPagoPercent" type="number" placeholder="% pronto pago" value="0">' +
-      '<label><input name="descuentosAcumulables" type="checkbox"> Acumulables</label>' +
-      '<input name="montoMinimo" type="number" placeholder="Monto mínimo" value="300">' +
-      '<select name="tasaTipo"><option value="BCV_USD">BCV $</option><option value="BCV_EUR">BCV €</option><option value="BINANCE">Binance</option></select>' +
-      '<button type="submit">Agregar proveedor</button>' +
+    panel.innerHTML = '<h2>Proveedores</h2>' +
+      '<div class="provider-list">' +
+      providers.map((p) => `
+        <div class="provider-row">
+          <div>
+            <span class="provider-name">${escapeHtml(p.nombre)}</span>
+            <span class="provider-meta">Efectivo ${p.descuentoEfectivoPercent}% · Pronto pago ${p.descuentoProntoPagoPercent}% (${p.descuentosAcumulables ? 'acumulables' : 'excluyentes'}) · Mínimo $${p.montoMinimo} · Tasa ${escapeHtml(p.tasaTipo)}</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger" data-borrar-proveedor="${escapeHtml(p.id)}">Borrar</button>
+        </div>`).join('') +
+      '</div>' +
+      '<form id="form-proveedor" class="provider-form">' +
+      '<input class="field" name="nombre" placeholder="Proveedor" required>' +
+      '<input class="field" name="descuentoEfectivoPercent" type="number" placeholder="% efectivo" value="0">' +
+      '<input class="field" name="descuentoProntoPagoPercent" type="number" placeholder="% pronto pago" value="0">' +
+      '<input class="field" name="montoMinimo" type="number" placeholder="Monto mínimo" value="300">' +
+      '<select class="field" name="tasaTipo"><option value="BCV_USD">BCV $</option><option value="BCV_EUR">BCV €</option><option value="BINANCE">Binance</option></select>' +
+      '<label class="checkbox-field"><input name="descuentosAcumulables" type="checkbox"> Acumulables</label>' +
+      '<button type="submit" class="btn btn-primary">Agregar proveedor</button>' +
       '</form>';
 
     document.getElementById('form-proveedor').addEventListener('submit', (ev) => {
@@ -55,10 +65,12 @@
     const rates = App.rates.get();
     panel.innerHTML = `
       <h2>Tasas del día</h2>
-      <label>BCV $ <input id="tasa-bcv-usd" type="number" step="0.01" value="${rates.BCV_USD || ''}"></label>
-      <label>BCV € <input id="tasa-bcv-eur" type="number" step="0.01" value="${rates.BCV_EUR || ''}"></label>
-      <label>Binance <input id="tasa-binance" type="number" step="0.01" value="${rates.BINANCE || ''}"></label>
-      <button id="btn-guardar-tasas">Guardar tasas</button>
+      <div class="field-row">
+        <label>BCV $<br><input class="field" id="tasa-bcv-usd" type="number" step="0.01" value="${rates.BCV_USD || ''}"></label>
+        <label>BCV €<br><input class="field" id="tasa-bcv-eur" type="number" step="0.01" value="${rates.BCV_EUR || ''}"></label>
+        <label>Binance<br><input class="field" id="tasa-binance" type="number" step="0.01" value="${rates.BINANCE || ''}"></label>
+        <button class="btn btn-primary" id="btn-guardar-tasas">Guardar tasas</button>
+      </div>
     `;
     document.getElementById('btn-guardar-tasas').addEventListener('click', () => {
       App.rates.set({
@@ -90,22 +102,24 @@
     const { resultados, proveedoresSinTasa } = App.search.filterAndCalculate(items, providers, rates, opciones);
 
     const tbody = document.getElementById('tbody-resultados');
-    tbody.innerHTML = resultados.map((r) => `
+    tbody.innerHTML = resultados.length === 0
+      ? '<tr><td colspan="9" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
+      : resultados.map((r) => `
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
         <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
         <td>$${r.precioOriginal.toFixed(2)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${r.precioFinalUSD.toFixed(2)}</td>
         <td>${r.precioFinalBs.toFixed(2)}</td>
-        <td>${r.cumpleMinimo ? 'Sí' : 'No'}</td>
+        <td><span class="badge ${r.cumpleMinimo ? 'badge-ok' : 'badge-warn'}">${r.cumpleMinimo ? 'Sí' : 'No'}</span></td>
       </tr>`).join('');
 
     const aviso = document.getElementById('aviso-tasas-faltantes');
     if (proveedoresSinTasa.length > 0) {
-      aviso.textContent = 'Falta tasa para: ' + proveedoresSinTasa.map(escapeHtml).join(', ');
-      aviso.style.display = '';
+      aviso.textContent = 'Falta tasa para: ' + proveedoresSinTasa.join(', ');
+      aviso.classList.add('is-visible');
     } else {
       aviso.textContent = '';
-      aviso.style.display = 'none';
+      aviso.classList.remove('is-visible');
     }
 
     App.app.ultimosResultados = resultados;
@@ -117,7 +131,7 @@
     renderProvidersPanel();
     renderRatesPanel();
     populateMarcaFilter();
-    document.getElementById('sync-status').textContent = App.sync.getLastSyncLabel();
+    setStatusPill(App.sync.getLastSyncLabel(), null);
 
     const inputWebAppUrl = document.getElementById('input-webapp-url');
     inputWebAppUrl.value = App.sync.getWebAppUrl() || '';
@@ -142,13 +156,14 @@
   }
 
   function ejecutarSync() {
-    document.getElementById('sync-status').textContent = 'Sincronizando...';
+    setStatusPill('Sincronizando...', 'is-busy');
     App.sync.syncNow().then((result) => {
-      document.getElementById('sync-status').textContent = result.ok
-        ? App.sync.getLastSyncLabel()
-        : result.error
-          ? 'Error: ' + result.error
-          : 'Sin conexión — ' + App.sync.getLastSyncLabel();
+      if (result.ok) {
+        setStatusPill(App.sync.getLastSyncLabel(), 'is-ok');
+      } else {
+        const detalle = result.error ? 'Error: ' + result.error : 'Sin conexión — ' + App.sync.getLastSyncLabel();
+        setStatusPill(detalle, 'is-error');
+      }
       populateMarcaFilter();
       renderResults();
     });
