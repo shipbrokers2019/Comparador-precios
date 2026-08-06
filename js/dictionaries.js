@@ -25,16 +25,13 @@
   }
 
   function normalizeTerm(term, dictionary) {
+    // I6 fix: only match on an exact (case-insensitive, trimmed) key lookup.
+    // Substring matching created false positives (e.g. "PISTON 0.30" and
+    // "PISTON STD 1.00 MM" both merging into "PISTONES"). Per spec, ambiguous
+    // or partial terms must always be flagged for manual review, never guessed.
     const clean = String(term || '').trim().toUpperCase();
     if (dictionary[clean]) {
       return { value: dictionary[clean], matched: true };
-    }
-    const substringMatches = Object.keys(dictionary).filter(
-      (key) => clean.includes(key) || key.includes(clean)
-    );
-    const distinctValues = [...new Set(substringMatches.map((k) => dictionary[k]))];
-    if (distinctValues.length === 1) {
-      return { value: distinctValues[0], matched: true };
     }
     return { value: clean, matched: false };
   }

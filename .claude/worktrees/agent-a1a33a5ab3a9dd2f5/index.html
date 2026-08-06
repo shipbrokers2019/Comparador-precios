@@ -11,8 +11,6 @@
     <h1>Comparador de Precios</h1>
     <div id="sync-status">Sin sincronizar</div>
     <button id="btn-sync">Sincronizar</button>
-    <input type="text" id="input-webapp-url" placeholder="URL de Apps Script (/exec)">
-    <button id="btn-guardar-url">Guardar URL</button>
   </header>
 
   <section id="panel-tasas"></section>
@@ -26,13 +24,12 @@
   </section>
 
   <section id="panel-resultados">
-    <div id="aviso-tasas-faltantes" style="display:none;"></div>
     <table id="tabla-resultados">
       <thead>
         <tr>
           <th>Proveedor</th><th>Repuesto</th><th>Marca</th>
           <th>Precio orig.</th><th>Descuentos</th><th>Tasa</th>
-          <th>Precio final</th><th>Precio final (Bs)</th><th>Mínimo</th>
+          <th>Precio final</th><th>Mínimo</th>
         </tr>
       </thead>
       <tbody id="tbody-resultados"></tbody>

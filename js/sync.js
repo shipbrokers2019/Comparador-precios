@@ -31,12 +31,17 @@
     if (!url) return Promise.resolve({ ok: false, error: 'No hay URL de Apps Script configurada' });
 
     return fetch(url)
-      .then((res) => res.json())
-      .then((payload) => {
-        const items = flattenAndNormalize(payload);
-        App.storage.set(App.storage.KEYS.LISTAS, items);
-        App.storage.set(App.storage.KEYS.LAST_SYNC, new Date().toISOString());
-        return { ok: true, itemCount: items.length };
+      .then((res) => {
+        if (!res.ok) return { ok: false, error: 'Error HTTP ' + res.status };
+        return res.json().then((payload) => {
+          if (payload && payload.error) {
+            return { ok: false, error: payload.error };
+          }
+          const items = flattenAndNormalize(payload);
+          App.storage.set(App.storage.KEYS.LISTAS, items);
+          App.storage.set(App.storage.KEYS.LAST_SYNC, new Date().toISOString());
+          return { ok: true, itemCount: items.length };
+        });
       })
       .catch((err) => ({ ok: false, error: err.message }));
   }

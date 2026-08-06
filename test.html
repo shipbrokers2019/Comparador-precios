@@ -4,6 +4,34 @@
 <body>
 <h1>Resultados de pruebas</h1>
 <ul id="test-results"></ul>
+<script>
+// I1 fix: this page shares the same file:// localStorage origin as index.html.
+// Snapshot any real 'cp_' prefixed data before the test suite runs, clear it
+// so tests start from a clean slate, and restore it on unload so index.html
+// keeps seeing real synced data instead of test fixtures after navigating away.
+(function () {
+  var snapshot = {};
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if (key.indexOf('cp_') === 0) snapshot[key] = localStorage.getItem(key);
+  }
+  Object.keys(snapshot).forEach(function (key) { localStorage.removeItem(key); });
+
+  window.addEventListener('beforeunload', function () {
+    Object.keys(snapshot).forEach(function (key) {
+      localStorage.removeItem(key);
+    });
+    // Remove any test-written cp_ keys not present in the original snapshot.
+    for (var i = localStorage.length - 1; i >= 0; i--) {
+      var key = localStorage.key(i);
+      if (key.indexOf('cp_') === 0) localStorage.removeItem(key);
+    }
+    Object.keys(snapshot).forEach(function (key) {
+      localStorage.setItem(key, snapshot[key]);
+    });
+  });
+})();
+</script>
 <script>window.App = {};</script>
 <script src="js/storage.js"></script>
 <script src="js/dictionaries.js"></script>
@@ -151,18 +179,19 @@ const providersList = [
 ];
 const ratesObj = { BCV_USD: 40 };
 
-const resultado = App.search.filterAndCalculate(items, providersList, ratesObj, {
+const { resultados: resultado, proveedoresSinTasa: sinTasa1 } = App.search.filterAndCalculate(items, providersList, ratesObj, {
   texto: 'piston', marca: '', aplicarEfectivo: true, aplicarProntoPago: false,
 });
 assertEqual(resultado.length, 1, 'search.filterAndCalculate: text filter matches PISTONES, excludes AXIALES, excludes unmatched provider OTRO');
 assertEqual(resultado[0].precioFinalUSD, 600, 'search.filterAndCalculate applies calculator discount to filtered item');
+assertEqual(sinTasa1, [], 'search.filterAndCalculate: no missing rates when tasaTipo is present');
 
-const resultadoMarca = App.search.filterAndCalculate(items, providersList, ratesObj, {
+const { resultados: resultadoMarca } = App.search.filterAndCalculate(items, providersList, ratesObj, {
   texto: '', marca: 'FORD', aplicarEfectivo: false, aplicarProntoPago: false,
 });
 assertEqual(resultadoMarca.length, 1, 'search.filterAndCalculate: marca filter matches only FORD item');
 
-const resultadoOrden = App.search.filterAndCalculate(
+const { resultados: resultadoOrden } = App.search.filterAndCalculate(
   [
     { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 1000 },
     { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 100 },
@@ -170,17 +199,25 @@ const resultadoOrden = App.search.filterAndCalculate(
   providersList, ratesObj, { texto: '', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
 );
 assertEqual(resultadoOrden[0].precioFinalUSD, 100, 'search.filterAndCalculate sorts ascending by precioFinalUSD');
+
+// I4: missing exchange rate excludes the item and reports the affected provider.
+const { resultados: resultadoSinTasa, proveedoresSinTasa: sinTasa2 } = App.search.filterAndCalculate(
+  [{ proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'PISTONES', precio: 1000 }],
+  providersList, { BCV_EUR: 43 }, { texto: '', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
+);
+assertEqual(resultadoSinTasa.length, 0, 'search.filterAndCalculate excludes items whose provider rate is missing');
+assertEqual(sinTasa2, ['ACME'], 'search.filterAndCalculate reports the provider names with a missing rate');
 renderAssertions();
 </script>
 <script src="js/export.js"></script>
 <script>
 const filas = App.export.buildRows([
-  { proveedor: 'ACME', repuesto: 'PISTONES', marca: 'CHEVROLET', precioOriginal: 1000, descuentosAplicados: 'Efectivo 40%', tasaAplicada: 40, precioFinalUSD: 600, cumpleMinimo: true },
+  { proveedor: 'ACME', repuesto: 'PISTONES', marca: 'CHEVROLET', precioOriginal: 1000, descuentosAplicados: 'Efectivo 40%', tasaAplicada: 40, precioFinalUSD: 600, precioFinalBs: 24000, cumpleMinimo: true },
 ]);
 assertEqual(filas[0], {
   Proveedor: 'ACME', Repuesto: 'PISTONES', Marca: 'CHEVROLET',
   'Precio original': 1000, Descuentos: 'Efectivo 40%', 'Tasa aplicada': 40,
-  'Precio final': 600, 'Cumple mínimo': 'Sí',
+  'Precio final': 600, 'Precio final (Bs)': 24000, 'Cumple mínimo': 'Sí',
 }, 'export.buildRows maps a result row to the expected Excel column shape');
 renderAssertions();
 </script>

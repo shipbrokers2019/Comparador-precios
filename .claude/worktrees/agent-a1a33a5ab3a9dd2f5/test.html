@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Tests</title></head>
+<body>
+<h1>Resultados de pruebas</h1>
+<ul id="test-results"></ul>
+<script>window.App = {};</script>
+<script src="js/storage.js"></script>
+<script src="js/dictionaries.js"></script>
+<script src="js/providers.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/search.js"></script>
+<script>
+window.assertions = [];
+function assertEqual(actual, expected, label) {
+  const pass = JSON.stringify(actual) === JSON.stringify(expected);
+  window.assertions.push({ label, pass, actual, expected });
+}
+function renderAssertions() {
+  const ul = document.getElementById('test-results');
+  let failCount = 0;
+  window.assertions.forEach(a => {
+    const li = document.createElement('li');
+    li.textContent = (a.pass ? 'PASS ' : 'FAIL ') + a.label +
+      (a.pass ? '' : ` (esperado ${JSON.stringify(a.expected)}, obtuvo ${JSON.stringify(a.actual)})`);
+    li.style.color = a.pass ? 'green' : 'red';
+    ul.appendChild(li);
+    if (!a.pass) failCount++;
+  });
+  const summary = document.createElement('li');
+  summary.textContent = `${window.assertions.length - failCount}/${window.assertions.length} pruebas OK`;
+  summary.style.fontWeight = 'bold';
+  ul.prepend(summary);
+}
+</script>
+</body>
+</html>

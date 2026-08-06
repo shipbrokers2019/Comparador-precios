@@ -18,11 +18,12 @@
     if (partes.length > 0) descuentosAplicados = partes.join(' + ');
 
     precioFinalUSD = Math.round(precioFinalUSD * 100) / 100;
+    const tasaFaltante = !rates[provider.tasaTipo];
     const tasaAplicada = rates[provider.tasaTipo] || 0;
     const precioFinalBs = Math.round(precioFinalUSD * tasaAplicada * 100) / 100;
     const cumpleMinimo = precioOriginal >= (provider.montoMinimo || 0);
 
-    return { precioOriginal, descuentosAplicados, precioFinalUSD, tasaAplicada, precioFinalBs, cumpleMinimo };
+    return { precioOriginal, descuentosAplicados, precioFinalUSD, tasaAplicada, precioFinalBs, cumpleMinimo, tasaFaltante };
   }
 
   window.App.calculator = { calculateFinalPrice };

@@ -8,6 +8,7 @@
       Descuentos: r.descuentosAplicados,
       'Tasa aplicada': r.tasaAplicada,
       'Precio final': r.precioFinalUSD,
+      'Precio final (Bs)': r.precioFinalBs,
       'Cumple mínimo': r.cumpleMinimo ? 'Sí' : 'No',
     }));
   }

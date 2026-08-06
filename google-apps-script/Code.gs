@@ -9,20 +9,30 @@ var HEADER_ALIASES = {
 };
 
 function doGet(e) {
-  var folder = DriveApp.getFoldersByName(FOLDER_NAME).next();
-  var files = folder.getFiles();
-  var resultado = [];
+  try {
+    var folders = DriveApp.getFoldersByName(FOLDER_NAME);
+    if (!folders.hasNext()) {
+      throw new Error('No se encontró la carpeta "LISTAS A EVALUAR" en Drive');
+    }
+    var folder = folders.next();
+    var files = folder.getFiles();
+    var resultado = [];
 
-  while (files.hasNext()) {
-    var file = files.next();
-    var nombreProveedor = file.getName().replace(/\.(xlsx|csv|xls)$/i, '');
-    var filas = leerArchivoComoFilas(file);
-    resultado.push({ proveedor: nombreProveedor, filas: filas });
+    while (files.hasNext()) {
+      var file = files.next();
+      var nombreProveedor = file.getName().replace(/\.(xlsx|csv|xls)$/i, '');
+      var filas = leerArchivoComoFilas(file);
+      resultado.push({ proveedor: nombreProveedor, filas: filas });
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify(resultado))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-
-  return ContentService
-    .createTextOutput(JSON.stringify(resultado))
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function leerArchivoComoFilas(file) {
@@ -35,8 +45,12 @@ function leerArchivoComoFilas(file) {
   } else {
     // xlsx/xls/csv: convert to a temporary Google Sheet to read its values.
     var blob = file.getBlob();
-    var resource = { title: file.getName() + '_temp', mimeType: MimeType.GOOGLE_SHEETS };
-    var converted = Drive.Files.insert(resource, blob, { convert: true });
+    // I7: targets Drive API v3 (the default when enabling "Drive API" as an
+    // Advanced Service in a new Apps Script project). v3 renamed Files.insert
+    // to Files.create and dropped the separate {convert:true} option — setting
+    // resource.mimeType to MimeType.GOOGLE_SHEETS is what triggers conversion.
+    var resource = { name: file.getName() + '_temp', mimeType: MimeType.GOOGLE_SHEETS };
+    var converted = Drive.Files.create(resource, blob);
     spreadsheetId = converted.id;
     esTemporal = true;
   }

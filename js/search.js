@@ -10,6 +10,7 @@
     });
 
     const conCalculo = [];
+    const proveedoresSinTasa = new Set();
     filtrados.forEach((item) => {
       const provider = providersList.find((p) => p.nombre === item.proveedor);
       if (!provider) return;
@@ -17,11 +18,15 @@
         aplicarEfectivo: opciones.aplicarEfectivo,
         aplicarProntoPago: opciones.aplicarProntoPago,
       });
+      if (calculo.tasaFaltante) {
+        proveedoresSinTasa.add(item.proveedor);
+        return;
+      }
       conCalculo.push({ ...item, ...calculo });
     });
 
     conCalculo.sort((a, b) => a.precioFinalUSD - b.precioFinalUSD);
-    return conCalculo;
+    return { resultados: conCalculo, proveedoresSinTasa: [...proveedoresSinTasa] };
   }
 
   window.App.search = { filterAndCalculate };

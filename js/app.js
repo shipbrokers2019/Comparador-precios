@@ -78,7 +78,7 @@
       aplicarEfectivo: document.getElementById('chk-efectivo').checked,
       aplicarProntoPago: document.getElementById('chk-pronto-pago').checked,
     };
-    const resultados = App.search.filterAndCalculate(items, providers, rates, opciones);
+    const { resultados, proveedoresSinTasa } = App.search.filterAndCalculate(items, providers, rates, opciones);
 
     const tbody = document.getElementById('tbody-resultados');
     tbody.innerHTML = resultados.map((r) => `
@@ -86,8 +86,18 @@
         <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
         <td>$${r.precioOriginal.toFixed(2)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${r.precioFinalUSD.toFixed(2)}</td>
+        <td>${r.precioFinalBs.toFixed(2)}</td>
         <td>${r.cumpleMinimo ? 'Sí' : 'No'}</td>
       </tr>`).join('');
+
+    const aviso = document.getElementById('aviso-tasas-faltantes');
+    if (proveedoresSinTasa.length > 0) {
+      aviso.textContent = 'Falta tasa para: ' + proveedoresSinTasa.map(escapeHtml).join(', ');
+      aviso.style.display = '';
+    } else {
+      aviso.textContent = '';
+      aviso.style.display = 'none';
+    }
 
     App.app.ultimosResultados = resultados;
   }
@@ -106,16 +116,7 @@
       App.sync.setWebAppUrl(inputWebAppUrl.value.trim());
     });
 
-    document.getElementById('btn-sync').addEventListener('click', () => {
-      document.getElementById('sync-status').textContent = 'Sincronizando...';
-      App.sync.syncNow().then((result) => {
-        document.getElementById('sync-status').textContent = result.ok
-          ? App.sync.getLastSyncLabel()
-          : 'Sin conexión — ' + App.sync.getLastSyncLabel();
-        populateMarcaFilter();
-        renderResults();
-      });
-    });
+    document.getElementById('btn-sync').addEventListener('click', ejecutarSync);
 
     ['filtro-texto', 'filtro-marca', 'chk-efectivo', 'chk-pronto-pago'].forEach((id) => {
       document.getElementById(id).addEventListener('input', renderResults);
@@ -126,6 +127,22 @@
     });
 
     renderResults();
+
+    // I3 fix: auto-sync on open, not just on button click (spec §17/§22).
+    ejecutarSync();
+  }
+
+  function ejecutarSync() {
+    document.getElementById('sync-status').textContent = 'Sincronizando...';
+    App.sync.syncNow().then((result) => {
+      document.getElementById('sync-status').textContent = result.ok
+        ? App.sync.getLastSyncLabel()
+        : result.error
+          ? 'Error: ' + result.error
+          : 'Sin conexión — ' + App.sync.getLastSyncLabel();
+      populateMarcaFilter();
+      renderResults();
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
