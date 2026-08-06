@@ -25,8 +25,15 @@ function doGet(e) {
     while (files.hasNext()) {
       var file = files.next();
       var nombreProveedor = file.getName().replace(/\.(xlsx|csv|xls)$/i, '').trim();
-      var filas = leerArchivoComoFilas(file);
-      resultado.push({ proveedor: nombreProveedor, filas: filas });
+      // A single bad file (weird format, conversion failure) must not take
+      // down the whole sync for every other provider — catch per file and
+      // report the error inline instead of letting it bubble up.
+      try {
+        var filas = leerArchivoComoFilas(file);
+        resultado.push({ proveedor: nombreProveedor, filas: filas });
+      } catch (fileErr) {
+        resultado.push({ proveedor: nombreProveedor, filas: [], error: fileErr.message });
+      }
     }
 
     return ContentService
