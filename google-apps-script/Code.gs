@@ -4,9 +4,13 @@
 var FOLDER_NAME = 'LISTAS A EVALUAR';
 var HEADER_ALIASES = {
   marca: ['marca', 'make'],
-  repuesto: ['repuesto', 'descripcion', 'descripción', 'item', 'producto'],
+  repuesto: ['repuesto', 'descripcion', 'descripción', 'nombre', 'producto'],
   precio: ['precio', 'price', 'valor'],
 };
+// How many of the file's leading rows to scan looking for the header row.
+// Real supplier price lists often have a few title/logo rows before the
+// actual column headers (company name, "LISTA DE PRECIOS", a blank row).
+var MAX_FILAS_A_ESCANEAR = 15;
 
 function doGet(e) {
   try {
@@ -68,9 +72,27 @@ function leerArchivoComoFilas(file) {
 function filasDesdeValores(values) {
   if (values.length === 0) return [];
 
-  var headerRow = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
-  var columnas = detectarColumnas(headerRow);
-  var startRow = columnas.encontradasPorNombre ? 1 : 0;
+  var columnas = null;
+  var headerRowIndex = -1;
+  var limite = Math.min(values.length, MAX_FILAS_A_ESCANEAR);
+  for (var f = 0; f < limite; f++) {
+    var headerRow = values[f].map(function (h) { return String(h).trim().toLowerCase(); });
+    var candidato = detectarColumnas(headerRow);
+    if (candidato.encontradasPorNombre) {
+      columnas = candidato;
+      headerRowIndex = f;
+      break;
+    }
+  }
+
+  if (!columnas) {
+    // No recognizable header found in the scanned rows: assume the very
+    // first row is data already, in column order marca/repuesto/precio.
+    columnas = { marca: 0, repuesto: 1, precio: 2, encontradasPorNombre: false };
+    headerRowIndex = -1;
+  }
+
+  var startRow = headerRowIndex + 1;
 
   var filas = [];
   for (var i = startRow; i < values.length; i++) {
@@ -92,15 +114,16 @@ function detectarColumnas(headerRow) {
   var indices = { marca: -1, repuesto: -1, precio: -1 };
   Object.keys(HEADER_ALIASES).forEach(function (campo) {
     HEADER_ALIASES[campo].forEach(function (alias) {
-      var idx = headerRow.indexOf(alias);
-      if (idx !== -1 && indices[campo] === -1) indices[campo] = idx;
+      for (var i = 0; i < headerRow.length; i++) {
+        // Substring match: a header cell like "precio pvp" should still
+        // count as the "precio" column, not just an exact "precio" cell.
+        if (indices[campo] === -1 && headerRow[i].indexOf(alias) !== -1) {
+          indices[campo] = i;
+        }
+      }
     });
   });
 
   var encontradasPorNombre = indices.marca !== -1 && indices.repuesto !== -1 && indices.precio !== -1;
-  if (!encontradasPorNombre) {
-    // Fallback: assume column order marca, repuesto, precio.
-    indices = { marca: 0, repuesto: 1, precio: 2 };
-  }
   return { marca: indices.marca, repuesto: indices.repuesto, precio: indices.precio, encontradasPorNombre: encontradasPorNombre };
 }
