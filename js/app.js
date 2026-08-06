@@ -27,11 +27,11 @@
         </div>`).join('') +
       '</div>' +
       '<form id="form-proveedor" class="provider-form">' +
-      '<input class="field" name="nombre" placeholder="Proveedor" required>' +
-      '<input class="field" name="descuentoEfectivoPercent" type="number" placeholder="% efectivo" value="0">' +
-      '<input class="field" name="descuentoProntoPagoPercent" type="number" placeholder="% pronto pago" value="0">' +
-      '<input class="field" name="montoMinimo" type="number" placeholder="Monto mínimo" value="300">' +
-      '<select class="field" name="tasaTipo"><option value="BCV_USD">BCV $</option><option value="BCV_EUR">BCV €</option><option value="BINANCE">Binance</option></select>' +
+      '<label class="field-group"><span class="field-label">Proveedor</span><input class="field" name="nombre" placeholder="Nombre exacto del archivo" required></label>' +
+      '<label class="field-group"><span class="field-label">% efectivo</span><input class="field" name="descuentoEfectivoPercent" type="number" value="0"></label>' +
+      '<label class="field-group"><span class="field-label">% pronto pago</span><input class="field" name="descuentoProntoPagoPercent" type="number" value="0"></label>' +
+      '<label class="field-group"><span class="field-label">Monto mínimo</span><input class="field" name="montoMinimo" type="number" value="300"></label>' +
+      '<label class="field-group"><span class="field-label">Tasa</span><select class="field" name="tasaTipo"><option value="BCV_USD">BCV $</option><option value="BCV_EUR">BCV €</option><option value="BINANCE">Binance</option></select></label>' +
       '<label class="checkbox-field"><input name="descuentosAcumulables" type="checkbox"> Acumulables</label>' +
       '<button type="submit" class="btn btn-primary">Agregar proveedor</button>' +
       '</form>';
@@ -66,9 +66,9 @@
     panel.innerHTML = `
       <h2>Tasas del día</h2>
       <div class="field-row">
-        <label>BCV $<br><input class="field" id="tasa-bcv-usd" type="number" step="0.01" value="${rates.BCV_USD || ''}"></label>
-        <label>BCV €<br><input class="field" id="tasa-bcv-eur" type="number" step="0.01" value="${rates.BCV_EUR || ''}"></label>
-        <label>Binance<br><input class="field" id="tasa-binance" type="number" step="0.01" value="${rates.BINANCE || ''}"></label>
+        <label class="field-group"><span class="field-label">BCV $</span><input class="field" id="tasa-bcv-usd" type="number" step="0.01" placeholder="0.00" value="${rates.BCV_USD || ''}"></label>
+        <label class="field-group"><span class="field-label">BCV €</span><input class="field" id="tasa-bcv-eur" type="number" step="0.01" placeholder="0.00" value="${rates.BCV_EUR || ''}"></label>
+        <label class="field-group"><span class="field-label">Binance</span><input class="field" id="tasa-binance" type="number" step="0.01" placeholder="0.00" value="${rates.BINANCE || ''}"></label>
         <button class="btn btn-primary" id="btn-guardar-tasas">Guardar tasas</button>
       </div>
     `;

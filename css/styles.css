@@ -189,6 +189,18 @@ h2 { font-size: 1rem; margin-bottom: var(--space-3); }
 
 .field::placeholder { color: var(--muted); }
 
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .field:focus {
   outline: none;
   border-color: var(--primary);
