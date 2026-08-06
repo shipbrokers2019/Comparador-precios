@@ -25,7 +25,7 @@
       conCalculo.push({ ...item, ...calculo });
     });
 
-    conCalculo.sort((a, b) => a.precioFinalUSD - b.precioFinalUSD);
+    conCalculo.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.precioFinalUSD - b.precioFinalUSD);
     return { resultados: conCalculo, proveedoresSinTasa: [...proveedoresSinTasa] };
   }
 
