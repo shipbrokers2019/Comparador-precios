@@ -7,10 +7,6 @@ var HEADER_ALIASES = {
   repuesto: ['repuesto', 'descripcion', 'descripción', 'nombre', 'producto'],
   precio: ['precio', 'price', 'valor', 'pvp'],
 };
-// How many of the file's leading rows to scan looking for the header row.
-// Real supplier price lists often have a few title/logo rows before the
-// actual column headers (company name, "LISTA DE PRECIOS", a blank row).
-var MAX_FILAS_A_ESCANEAR = 15;
 
 function doGet(e) {
   try {
@@ -79,37 +75,30 @@ function leerArchivoComoFilas(file) {
 function filasDesdeValores(values) {
   if (values.length === 0) return [];
 
+  // Multi-table sheets (one sub-section per "Departamento", each with its
+  // own repeated header row) can use a different column layout per
+  // section. Re-detect the header every time a header-like row is found,
+  // instead of locking onto whichever one appears first in the file.
   var columnas = null;
-  var headerRowIndex = -1;
-  var limite = Math.min(values.length, MAX_FILAS_A_ESCANEAR);
-  for (var f = 0; f < limite; f++) {
-    var headerRow = values[f].map(function (h) { return String(h).trim().toLowerCase(); });
+  var filas = [];
+
+  for (var i = 0; i < values.length; i++) {
+    var fila = values[i];
+    var headerRow = fila.map(function (h) { return String(h).trim().toLowerCase(); });
     var candidato = detectarColumnas(headerRow);
     if (candidato.encontradasPorNombre) {
       columnas = candidato;
-      headerRowIndex = f;
-      break;
+      continue; // this row is a header, not a data row
     }
-  }
 
-  if (!columnas) {
-    // No recognizable header found in the scanned rows: assume the very
-    // first row is data already, in column order marca/repuesto/precio.
-    columnas = { marca: 0, repuesto: 1, precio: 2, encontradasPorNombre: false };
-    headerRowIndex = -1;
-  }
+    if (!columnas) continue; // no header found yet: skip title/logo rows
 
-  var startRow = headerRowIndex + 1;
-
-  var filas = [];
-  for (var i = startRow; i < values.length; i++) {
-    var fila = values[i];
     var marca = columnas.marca !== -1 ? fila[columnas.marca] : '';
     var repuesto = fila[columnas.repuesto];
     var precio = fila[columnas.precio];
-    // Skip rows with no usable price: section titles and repeated header
-    // rows inside multi-table sheets never carry a real numeric price,
-    // so this is a reliable way to drop them without guessing at layout.
+    // Skip rows with no usable price: section titles and blank separator
+    // rows between sections never carry a real numeric price, so this is
+    // a reliable way to drop them without guessing at layout.
     if (precio === '' || precio === null || precio === undefined || isNaN(Number(precio))) continue;
     filas.push({
       marca: String(marca || ''),
@@ -117,6 +106,23 @@ function filasDesdeValores(values) {
       precio: Number(precio) || 0,
     });
   }
+
+  if (!columnas) {
+    // Never found any recognizable header anywhere in the file: fall back
+    // to treating every row as data, in column order marca/repuesto/precio.
+    filas = [];
+    for (var j = 0; j < values.length; j++) {
+      var fallbackFila = values[j];
+      var fallbackPrecio = fallbackFila[2];
+      if (fallbackPrecio === '' || fallbackPrecio === null || fallbackPrecio === undefined || isNaN(Number(fallbackPrecio))) continue;
+      filas.push({
+        marca: String(fallbackFila[0] || ''),
+        repuesto: String(fallbackFila[1] || ''),
+        precio: Number(fallbackPrecio) || 0,
+      });
+    }
+  }
+
   return filas;
 }
 
