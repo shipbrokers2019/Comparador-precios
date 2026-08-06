@@ -100,7 +100,10 @@ function filasDesdeValores(values) {
     var marca = fila[columnas.marca];
     var repuesto = fila[columnas.repuesto];
     var precio = fila[columnas.precio];
-    if (marca === '' && repuesto === '' && precio === '') continue;
+    // Skip rows with no usable price: section titles and repeated header
+    // rows inside multi-table sheets never carry a real numeric price,
+    // so this is a reliable way to drop them without guessing at layout.
+    if (precio === '' || precio === null || precio === undefined || isNaN(Number(precio))) continue;
     filas.push({
       marca: String(marca || ''),
       repuesto: String(repuesto || ''),
