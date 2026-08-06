@@ -1,13 +1,19 @@
 (function () {
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str == null ? '' : str);
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function renderProvidersPanel() {
     const panel = document.getElementById('panel-proveedores');
     const providers = App.providers.getAll();
     panel.innerHTML = '<h2>Proveedores</h2>' + providers.map((p) => `
       <div>
-        <strong>${p.nombre}</strong>
+        <strong>${escapeHtml(p.nombre)}</strong>
         — Efectivo ${p.descuentoEfectivoPercent}% / Pronto pago ${p.descuentoProntoPagoPercent}%
         (${p.descuentosAcumulables ? 'acumulables' : 'excluyentes'})
-        — Mínimo $${p.montoMinimo} — Tasa: ${p.tasaTipo}
+        — Mínimo $${p.montoMinimo} — Tasa: ${escapeHtml(p.tasaTipo)}
       </div>`).join('') +
       '<form id="form-proveedor">' +
       '<input name="nombre" placeholder="Proveedor" required>' +
@@ -31,6 +37,7 @@
         tasaTipo: fd.get('tasaTipo'),
       });
       renderProvidersPanel();
+      renderResults();
     });
   }
 
@@ -50,6 +57,7 @@
         BCV_EUR: Number(document.getElementById('tasa-bcv-eur').value) || 0,
         BINANCE: Number(document.getElementById('tasa-binance').value) || 0,
       });
+      renderResults();
     });
   }
 
@@ -57,7 +65,7 @@
     const select = document.getElementById('filtro-marca');
     const marcas = [...new Set(App.sync.getCachedItems().map((i) => i.marca))].sort();
     select.innerHTML = '<option value="">Todas las marcas</option>' +
-      marcas.map((m) => `<option value="${m}">${m}</option>`).join('');
+      marcas.map((m) => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
   }
 
   function renderResults() {
@@ -75,8 +83,8 @@
     const tbody = document.getElementById('tbody-resultados');
     tbody.innerHTML = resultados.map((r) => `
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
-        <td>${r.proveedor}</td><td>${r.repuesto}</td><td>${r.marca}</td>
-        <td>$${r.precioOriginal.toFixed(2)}</td><td>${r.descuentosAplicados}</td>
+        <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
+        <td>$${r.precioOriginal.toFixed(2)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${r.precioFinalUSD.toFixed(2)}</td>
         <td>${r.cumpleMinimo ? 'Sí' : 'No'}</td>
       </tr>`).join('');
@@ -91,6 +99,12 @@
     renderRatesPanel();
     populateMarcaFilter();
     document.getElementById('sync-status').textContent = App.sync.getLastSyncLabel();
+
+    const inputWebAppUrl = document.getElementById('input-webapp-url');
+    inputWebAppUrl.value = App.sync.getWebAppUrl() || '';
+    document.getElementById('btn-guardar-url').addEventListener('click', () => {
+      App.sync.setWebAppUrl(inputWebAppUrl.value.trim());
+    });
 
     document.getElementById('btn-sync').addEventListener('click', () => {
       document.getElementById('sync-status').textContent = 'Sincronizando...';

@@ -75,6 +75,7 @@ assertEqual(App.providers.getAll().length, 0, 'providers.remove deletes provider
 renderAssertions();
 </script>
 <script>
+localStorage.removeItem('cp_tasas');
 assertEqual(App.rates.get().BCV_USD, undefined, 'rates.get returns empty object before first set');
 App.rates.set({ BCV_USD: 40, BCV_EUR: 43, BINANCE: 39.5 });
 const r = App.rates.get();
