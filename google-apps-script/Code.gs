@@ -100,6 +100,11 @@ function filasDesdeValores(values) {
     // rows between sections never carry a real numeric price, so this is
     // a reliable way to drop them without guessing at layout.
     if (precio === '' || precio === null || precio === undefined || isNaN(Number(precio))) continue;
+    // Skip rows with an implausible price (data-entry errors in the
+    // source file, e.g. a stray extra zero turning $54.57 into
+    // $54,569,999,999,999.99). No auto part legitimately costs this much.
+    var PRECIO_MAXIMO_RAZONABLE = 50000;
+    if (Number(precio) > PRECIO_MAXIMO_RAZONABLE) continue;
     filas.push({
       marca: String(marca || ''),
       repuesto: String(repuesto || ''),
