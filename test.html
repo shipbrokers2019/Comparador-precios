@@ -78,14 +78,25 @@ assertEqual(
   'normalizeTerm matches case-insensitive exact alias'
 );
 assertEqual(
-  App.dictionaries.normalizeTerm('MAZDA', App.dictionaries.getAll().marca),
-  { value: 'MAZDA', matched: false },
+  App.dictionaries.normalizeTerm('LADA', App.dictionaries.getAll().marca),
+  { value: 'LADA', matched: false },
   'normalizeTerm returns original + matched:false when no alias found'
 );
 const item = App.dictionaries.normalizeItem({ proveedor: 'ACME', marca: 'CHE', repuesto: 'RADIADOR', precio: 10 });
 assertEqual(item.marca, 'CHEVROLET', 'normalizeItem normalizes marca');
 assertEqual(item.marcaNormalizada, true, 'normalizeItem flags marca as normalized');
 assertEqual(item.repuestoNormalizado, false, 'normalizeItem flags unmatched repuesto');
+
+// Fallback: extract vehicle brand from the repuesto text when the marca
+// column holds an unrecognized parts-line brand instead of a vehicle brand.
+const itemExtraido = App.dictionaries.normalizeItem({ proveedor: 'EBITEN', marca: 'EBITEN-BECO', repuesto: 'ANILLOS DODGE NEON MOTOR 2.0', precio: 10 });
+assertEqual(itemExtraido.marca, 'DODGE', 'normalizeItem extracts vehicle brand from repuesto text when marca column does not match');
+assertEqual(itemExtraido.marcaNormalizada, true, 'normalizeItem flags the extracted marca as normalized');
+
+// A marca column that already matches (e.g. a real "VEHÍCULO" column) must
+// win over any brand word that might also appear in the repuesto text.
+const itemConMarcaReal = App.dictionaries.normalizeItem({ proveedor: 'LP', marca: 'FORD', repuesto: 'ANILLO GRANT CROMADO JEEP GRAND CHEROKEE', precio: 10 });
+assertEqual(itemConMarcaReal.marca, 'FORD', 'normalizeItem keeps a matched marca column instead of extracting from text');
 renderAssertions();
 </script>
 <script>
