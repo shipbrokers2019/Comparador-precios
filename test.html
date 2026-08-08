@@ -223,10 +223,10 @@ renderAssertions();
 <script src="js/export.js"></script>
 <script>
 const filas = App.export.buildRows([
-  { proveedor: 'ACME', repuesto: 'PISTONES', marca: 'CHEVROLET', precioOriginal: 1000, descuentosAplicados: 'Efectivo 40%', tasaAplicada: 40, precioFinalUSD: 600, precioFinalBs: 24000, cumpleMinimo: true },
+  { proveedor: 'ACME', repuesto: 'PISTONES', marca: 'CHEVROLET', marcaRepuesto: 'TSA', precioOriginal: 1000, descuentosAplicados: 'Efectivo 40%', tasaAplicada: 40, precioFinalUSD: 600, precioFinalBs: 24000, cumpleMinimo: true },
 ]);
 assertEqual(filas[0], {
-  Proveedor: 'ACME', Repuesto: 'PISTONES', Marca: 'CHEVROLET',
+  Proveedor: 'ACME', Repuesto: 'PISTONES', Marca: 'CHEVROLET', 'Marca repuesto': 'TSA',
   'Precio original': 1000, Descuentos: 'Efectivo 40%', 'Tasa aplicada': 40,
   'Precio final': 600, 'Precio final (Bs)': 24000, 'Cumple mínimo': 'Sí',
 }, 'export.buildRows maps a result row to the expected Excel column shape');

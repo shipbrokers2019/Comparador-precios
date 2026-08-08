@@ -4,6 +4,7 @@
       Proveedor: r.proveedor,
       Repuesto: r.repuesto,
       Marca: r.marca,
+      'Marca repuesto': r.marcaRepuesto,
       'Precio original': r.precioOriginal,
       Descuentos: r.descuentosAplicados,
       'Tasa aplicada': r.tasaAplicada,

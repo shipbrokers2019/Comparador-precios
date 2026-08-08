@@ -84,7 +84,12 @@
 
   function populateMarcaFilter() {
     const select = document.getElementById('filtro-marca');
-    const marcas = [...new Set(App.sync.getCachedItems().map((i) => i.marca))].sort();
+    // Only list recognized vehicle brands (marcaNormalizada) — a parts
+    // manufacturer brand like "TSA" or "TAKASHI" is not something anyone
+    // filters by when looking for "repuestos de Toyota".
+    const marcas = [...new Set(
+      App.sync.getCachedItems().filter((i) => i.marcaNormalizada).map((i) => i.marca)
+    )].sort();
     select.innerHTML = '<option value="">Todas las marcas</option>' +
       marcas.map((m) => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
   }
@@ -103,10 +108,11 @@
 
     const tbody = document.getElementById('tbody-resultados');
     tbody.innerHTML = resultados.length === 0
-      ? '<tr><td colspan="9" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
+      ? '<tr><td colspan="10" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
       : resultados.map((r) => `
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
         <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
+        <td>${escapeHtml(r.marcaRepuesto)}</td>
         <td>$${r.precioOriginal.toFixed(2)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${r.precioFinalUSD.toFixed(2)}</td>
         <td>${r.precioFinalBs.toFixed(2)}</td>

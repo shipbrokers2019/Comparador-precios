@@ -83,6 +83,10 @@
       ...rawItem,
       marca,
       marcaNormalizada,
+      // The parts manufacturer's own brand (e.g. "TSA", "EBITEN-BECO"),
+      // kept separate from the vehicle brand above — some files put this
+      // in the "marca" column, which is what marcaExtraida works around.
+      marcaRepuesto: String(rawItem.marca || '').trim(),
       repuesto: repuestoResult.value,
       repuestoNormalizado: repuestoResult.matched,
     };
