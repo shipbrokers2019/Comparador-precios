@@ -205,11 +205,12 @@ function obtenerTasas() {
 }
 
 // The BCV homepage renders each rate inside a widget like:
-// <div id="dolar">...<strong>123,45670000</strong>...</div>
-// Venezuelan format uses "," as the decimal separator and "." as the
-// thousands separator, the opposite of what Number() expects.
+// <div id="dolar" ...>...<strong class="strong-tb">123,45670000</strong>...</div>
+// The <strong> tag carries a class attribute — match any attributes on it,
+// not a bare <strong>. Venezuelan format uses "," as the decimal separator
+// and "." as the thousands separator, the opposite of what Number() expects.
 function extraerTasaBCV(html, idCampo) {
-  var patron = new RegExp('id="' + idCampo + '"[\\s\\S]*?<strong>\\s*([0-9.,]+)\\s*</strong>', 'i');
+  var patron = new RegExp('id="' + idCampo + '"[\\s\\S]*?<strong[^>]*>\\s*([0-9.,]+)\\s*</strong>', 'i');
   var coincidencia = html.match(patron);
   if (!coincidencia) return null;
   var numero = coincidencia[1].replace(/\./g, '').replace(',', '.');
