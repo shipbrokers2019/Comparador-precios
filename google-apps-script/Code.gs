@@ -9,6 +9,10 @@ var HEADER_ALIASES = {
 };
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.accion === 'tasas') {
+    return obtenerTasas();
+  }
+
   try {
     var folders = DriveApp.getFoldersByName(FOLDER_NAME);
     if (!folders.hasNext()) {
@@ -170,4 +174,80 @@ function detectarColumnas(headerRow) {
   // of correctly reading their real repuesto/precio columns.
   var encontradasPorNombre = indices.repuesto !== -1 && indices.precio !== -1;
   return { marca: indices.marca, repuesto: indices.repuesto, precio: indices.precio, encontradasPorNombre: encontradasPorNombre };
+}
+
+// ============================================================
+// Tasas del día: BCV (oficial) y Binance P2P (aproximada).
+// Called via GET .../exec?accion=tasas — kept separate from the
+// Drive-sync path above; a failure here must never affect syncing.
+// ============================================================
+
+function obtenerTasas() {
+  var resultado = { BCV_USD: null, BCV_EUR: null, BINANCE: null };
+
+  try {
+    var html = UrlFetchApp.fetch('https://www.bcv.org.ve/', { muteHttpExceptions: true }).getContentText();
+    resultado.BCV_USD = extraerTasaBCV(html, 'dolar');
+    resultado.BCV_EUR = extraerTasaBCV(html, 'euro');
+  } catch (errBcv) {
+    resultado.errorBCV = errBcv.message;
+  }
+
+  try {
+    resultado.BINANCE = obtenerTasaBinance();
+  } catch (errBinance) {
+    resultado.errorBinance = errBinance.message;
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify(resultado))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// The BCV homepage renders each rate inside a widget like:
+// <div id="dolar">...<strong>123,45670000</strong>...</div>
+// Venezuelan format uses "," as the decimal separator and "." as the
+// thousands separator, the opposite of what Number() expects.
+function extraerTasaBCV(html, idCampo) {
+  var patron = new RegExp('id="' + idCampo + '"[\\s\\S]*?<strong>\\s*([0-9.,]+)\\s*</strong>', 'i');
+  var coincidencia = html.match(patron);
+  if (!coincidencia) return null;
+  var numero = coincidencia[1].replace(/\./g, '').replace(',', '.');
+  var valor = Number(numero);
+  return isNaN(valor) ? null : valor;
+}
+
+// Binance P2P has no official public "rate" endpoint; this hits the same
+// JSON API their own P2P web page uses, and averages the first page of
+// USDT/VES sell ads. This is inherently approximate — P2P prices vary
+// ad-by-ad — which is why the field stays editable in the app either way.
+function obtenerTasaBinance() {
+  var url = 'https://api2.binance.com/bapi/c2c/v2/friendly/c2c/adv/search';
+  var payload = {
+    asset: 'USDT',
+    fiat: 'VES',
+    tradeType: 'SELL',
+    page: 1,
+    rows: 10,
+    payTypes: [],
+    publisherType: null,
+  };
+  var opciones = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+  };
+  var respuesta = UrlFetchApp.fetch(url, opciones);
+  var datos = JSON.parse(respuesta.getContentText());
+  var anuncios = datos && datos.data ? datos.data : [];
+  var precios = [];
+  for (var i = 0; i < anuncios.length; i++) {
+    var precio = Number(anuncios[i].adv && anuncios[i].adv.price);
+    if (!isNaN(precio)) precios.push(precio);
+  }
+  if (precios.length === 0) return null;
+  var suma = 0;
+  for (var j = 0; j < precios.length; j++) suma += precios[j];
+  return Math.round((suma / precios.length) * 100) / 100;
 }

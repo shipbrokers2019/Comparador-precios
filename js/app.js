@@ -69,8 +69,10 @@
         <label class="field-group"><span class="field-label">BCV $</span><input class="field" id="tasa-bcv-usd" type="number" step="0.01" placeholder="0.00" value="${rates.BCV_USD || ''}"></label>
         <label class="field-group"><span class="field-label">BCV €</span><input class="field" id="tasa-bcv-eur" type="number" step="0.01" placeholder="0.00" value="${rates.BCV_EUR || ''}"></label>
         <label class="field-group"><span class="field-label">Binance</span><input class="field" id="tasa-binance" type="number" step="0.01" placeholder="0.00" value="${rates.BINANCE || ''}"></label>
+        <button class="btn btn-secondary" id="btn-actualizar-tasas" type="button">Actualizar</button>
         <button class="btn btn-primary" id="btn-guardar-tasas">Guardar tasas</button>
       </div>
+      <div class="notice" id="aviso-tasas-externas" style="display:none;"></div>
     `;
     document.getElementById('btn-guardar-tasas').addEventListener('click', () => {
       App.rates.set({
@@ -79,6 +81,38 @@
         BINANCE: Number(document.getElementById('tasa-binance').value) || 0,
       });
       renderResults();
+    });
+
+    document.getElementById('btn-actualizar-tasas').addEventListener('click', () => {
+      const boton = document.getElementById('btn-actualizar-tasas');
+      const aviso = document.getElementById('aviso-tasas-externas');
+      boton.disabled = true;
+      boton.textContent = 'Buscando...';
+      App.rates.fetchExternas().then((result) => {
+        boton.disabled = false;
+        boton.textContent = 'Actualizar';
+        if (!result.ok) {
+          aviso.textContent = 'No se pudo actualizar: ' + result.error;
+          aviso.style.display = '';
+          return;
+        }
+        const { data } = result;
+        const problemas = [];
+        if (data.BCV_USD != null) document.getElementById('tasa-bcv-usd').value = data.BCV_USD;
+        else problemas.push('BCV $' + (data.errorBCV ? ' (' + data.errorBCV + ')' : ''));
+        if (data.BCV_EUR != null) document.getElementById('tasa-bcv-eur').value = data.BCV_EUR;
+        else problemas.push('BCV €' + (data.errorBCV ? ' (' + data.errorBCV + ')' : ''));
+        if (data.BINANCE != null) document.getElementById('tasa-binance').value = data.BINANCE;
+        else problemas.push('Binance' + (data.errorBinance ? ' (' + data.errorBinance + ')' : ''));
+
+        if (problemas.length > 0) {
+          aviso.textContent = 'No se pudo traer: ' + problemas.join(', ') + '. Revisá/completá a mano y guardá.';
+          aviso.style.display = '';
+        } else {
+          aviso.textContent = 'Tasas traídas. Revisá los valores y hacé clic en "Guardar tasas" para aplicarlas.';
+          aviso.style.display = '';
+        }
+      });
     });
   }
 
