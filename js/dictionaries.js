@@ -72,11 +72,12 @@
     let marca = marcaResult.value;
     let marcaNormalizada = marcaResult.matched;
     if (!marcaResult.matched) {
+      // Neither the marca column nor the repuesto text tell us the actual
+      // vehicle brand — leave it blank rather than showing the parts
+      // brand (or raw junk) as if it were the vehicle brand.
       const marcaExtraida = extraerMarcaDeTexto(rawItem.repuesto, dict.marca);
-      if (marcaExtraida) {
-        marca = marcaExtraida;
-        marcaNormalizada = true;
-      }
+      marca = marcaExtraida || '';
+      marcaNormalizada = !!marcaExtraida;
     }
 
     return {
