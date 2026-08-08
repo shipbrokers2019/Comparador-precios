@@ -20,6 +20,71 @@
       'VW': 'VOLKSWAGEN', 'VOLKSWAGEN': 'VOLKSWAGEN',
       'DAEWOO': 'DAEWOO',
     },
+    // Model name → vehicle brand, used as a second fallback when the text
+    // mentions a model ("SILVERADO", "GRAND VITARA") but not the brand
+    // word itself. Common models sold in Venezuela, grouped by brand.
+    modelo: {
+      // CHEVROLET
+      'CAVALIER': 'CHEVROLET', 'EPICA': 'CHEVROLET', 'SILVERADO': 'CHEVROLET',
+      'TRAIL BLAZER': 'CHEVROLET', 'TRAILBLAZER': 'CHEVROLET', 'MONZA': 'CHEVROLET',
+      'ORLANDO': 'CHEVROLET', 'COLORADO': 'CHEVROLET', 'AVEO': 'CHEVROLET',
+      'OPTRA': 'CHEVROLET', 'CORSA': 'CHEVROLET', 'MERIVA': 'CHEVROLET',
+      'ASTRA': 'CHEVROLET', 'VECTRA': 'CHEVROLET', 'CRUZE': 'CHEVROLET',
+      'SPARK': 'CHEVROLET', 'BLAZER': 'CHEVROLET', 'CAPTIVA': 'CHEVROLET',
+      'CHEYENNE': 'CHEVROLET', 'LUV': 'CHEVROLET', 'GRAND BLAZER': 'CHEVROLET',
+      'IMPALA': 'CHEVROLET',
+      // SUZUKI
+      'GRAND VITARA': 'SUZUKI', 'VITARA': 'SUZUKI', 'SWIFT': 'SUZUKI',
+      'ESTEEM': 'SUZUKI', 'JIMNY': 'SUZUKI', 'XL5': 'SUZUKI', 'XL7': 'SUZUKI',
+      'WAGON R': 'SUZUKI',
+      // FORD
+      'FIESTA': 'FORD', 'FOCUS': 'FORD', 'ESCORT': 'FORD', 'EXPLORER': 'FORD',
+      'RANGER': 'FORD', 'F-150': 'FORD', 'F150': 'FORD', 'F-250': 'FORD',
+      'F250': 'FORD', 'F-350': 'FORD', 'F350': 'FORD', 'MUSTANG': 'FORD',
+      'TAURUS': 'FORD', 'ECOSPORT': 'FORD', 'FUSION': 'FORD',
+      // TOYOTA
+      'COROLLA': 'TOYOTA', 'HILUX': 'TOYOTA', 'FORTUNER': 'TOYOTA',
+      'CAMRY': 'TOYOTA', 'YARIS': 'TOYOTA', 'TERIOS': 'TOYOTA',
+      '4RUNNER': 'TOYOTA', 'RUNNER': 'TOYOTA', 'LAND CRUISER': 'TOYOTA',
+      'PRADO': 'TOYOTA', 'RAV4': 'TOYOTA', 'TACOMA': 'TOYOTA',
+      'TUNDRA': 'TOYOTA', 'SIENNA': 'TOYOTA', 'STARLET': 'TOYOTA',
+      'MERU': 'TOYOTA',
+      // JEEP
+      'GRAND CHEROKEE': 'JEEP', 'CHEROKEE': 'JEEP', 'WRANGLER': 'JEEP',
+      'LIBERTY': 'JEEP', 'PATRIOT': 'JEEP', 'COMPASS': 'JEEP',
+      // DODGE
+      'RAM': 'DODGE', 'NEON': 'DODGE', 'STRATUS': 'DODGE',
+      'CARAVAN': 'DODGE', 'DURANGO': 'DODGE', 'DAKOTA': 'DODGE',
+      'JOURNEY': 'DODGE', 'ASPEN': 'DODGE',
+      // RENAULT
+      'LOGAN': 'RENAULT', 'SANDERO': 'RENAULT', 'DUSTER': 'RENAULT',
+      'KANGOO': 'RENAULT', 'CLIO': 'RENAULT', 'MEGANE': 'RENAULT',
+      // HYUNDAI
+      'ELANTRA': 'HYUNDAI', 'ACCENT': 'HYUNDAI', 'TUCSON': 'HYUNDAI',
+      'SANTA FE': 'HYUNDAI', 'SONATA': 'HYUNDAI', 'GETZ': 'HYUNDAI',
+      'MATRIX': 'HYUNDAI', 'H1': 'HYUNDAI',
+      // MITSUBISHI
+      'LANCER': 'MITSUBISHI', 'MONTERO': 'MITSUBISHI', 'L200': 'MITSUBISHI',
+      'OUTLANDER': 'MITSUBISHI', 'ECLIPSE': 'MITSUBISHI', 'GALANT': 'MITSUBISHI',
+      // KIA
+      'OPTIMA': 'KIA', 'RIO': 'KIA', 'SPORTAGE': 'KIA', 'SORENTO': 'KIA',
+      'CERATO': 'KIA', 'PICANTO': 'KIA',
+      // HONDA
+      'CIVIC': 'HONDA', 'ACCORD': 'HONDA', 'CRV': 'HONDA', 'CR-V': 'HONDA',
+      // VOLKSWAGEN
+      'GOL': 'VOLKSWAGEN', 'JETTA': 'VOLKSWAGEN', 'PASSAT': 'VOLKSWAGEN',
+      'GOLF': 'VOLKSWAGEN', 'POLO': 'VOLKSWAGEN', 'SAVEIRO': 'VOLKSWAGEN',
+      'AMAROK': 'VOLKSWAGEN',
+      // FIAT
+      'UNO': 'FIAT', 'PALIO': 'FIAT', 'SIENA': 'FIAT', 'IDEA': 'FIAT',
+      'STRADA': 'FIAT',
+      // CHERY
+      'ORINOCO': 'CHERY',
+      // NISSAN
+      'SENTRA': 'NISSAN', 'ALTIMA': 'NISSAN', 'XTRAIL': 'NISSAN',
+      'X-TRAIL': 'NISSAN', 'FRONTIER': 'NISSAN', 'PATHFINDER': 'NISSAN',
+      'VERSA': 'NISSAN', 'TIIDA': 'NISSAN', 'NAVARA': 'NISSAN',
+    },
     repuesto: {
       'CONCHA BIELA': 'CONCHAS DE BIELA', 'CONCHAS DE BIELA': 'CONCHAS DE BIELA',
       'CONCHA BANCADA': 'CONCHAS DE BANCADA', 'CONCHAS DE BANCADA': 'CONCHAS DE BANCADA',
@@ -64,6 +129,23 @@
     return null;
   }
 
+  function extraerMarcaDeModelo(texto, dictionaryModelo) {
+    // Second fallback: the text may mention a model ("SILVERADO", "GRAND
+    // VITARA") without the brand word itself. Model keys can be one or
+    // two words, so match with word boundaries instead of splitting on
+    // whitespace. Longest keys first, so "GRAND VITARA" wins over any
+    // shorter key that might also appear inside it.
+    const limpio = String(texto || '').toUpperCase();
+    const claves = Object.keys(dictionaryModelo).sort((a, b) => b.length - a.length);
+    for (let i = 0; i < claves.length; i++) {
+      const clave = claves[i];
+      const escapada = clave.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const patron = new RegExp('(^|[^A-ZÁÉÍÓÚÑ0-9])' + escapada + '($|[^A-ZÁÉÍÓÚÑ0-9])');
+      if (patron.test(limpio)) return dictionaryModelo[clave];
+    }
+    return null;
+  }
+
   function normalizeItem(rawItem) {
     const dict = getAll();
     const marcaResult = normalizeTerm(rawItem.marca, dict.marca);
@@ -75,7 +157,8 @@
       // Neither the marca column nor the repuesto text tell us the actual
       // vehicle brand — leave it blank rather than showing the parts
       // brand (or raw junk) as if it were the vehicle brand.
-      const marcaExtraida = extraerMarcaDeTexto(rawItem.repuesto, dict.marca);
+      const marcaExtraida = extraerMarcaDeTexto(rawItem.repuesto, dict.marca)
+        || extraerMarcaDeModelo(rawItem.repuesto, dict.modelo);
       marca = marcaExtraida || '';
       marcaNormalizada = !!marcaExtraida;
     }
@@ -93,5 +176,5 @@
     };
   }
 
-  window.App.dictionaries = { getAll, addSynonym, normalizeTerm, normalizeItem, extraerMarcaDeTexto };
+  window.App.dictionaries = { getAll, addSynonym, normalizeTerm, normalizeItem, extraerMarcaDeTexto, extraerMarcaDeModelo };
 })();

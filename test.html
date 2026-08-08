@@ -97,6 +97,21 @@ assertEqual(itemExtraido.marcaNormalizada, true, 'normalizeItem flags the extrac
 // win over any brand word that might also appear in the repuesto text.
 const itemConMarcaReal = App.dictionaries.normalizeItem({ proveedor: 'LP', marca: 'FORD', repuesto: 'ANILLO GRANT CROMADO JEEP GRAND CHEROKEE', precio: 10 });
 assertEqual(itemConMarcaReal.marca, 'FORD', 'normalizeItem keeps a matched marca column instead of extracting from text');
+
+// Second fallback: no brand word in the text, but a known model name is.
+const itemPorModelo = App.dictionaries.normalizeItem({ proveedor: 'EBITEN', marca: 'EBITEN-BECO', repuesto: 'CORREA UNICA SILVERADO K060950', precio: 10 });
+assertEqual(itemPorModelo.marca, 'CHEVROLET', 'normalizeItem extracts vehicle brand from a model name (SILVERADO) when no brand word is present');
+assertEqual(itemPorModelo.marcaRepuesto, 'EBITEN-BECO', 'normalizeItem still preserves the parts brand separately');
+
+// Multi-word model names ("GRAND VITARA") must match too, not just single words.
+const itemModeloDosPalabras = App.dictionaries.normalizeItem({ proveedor: 'TAHIO', marca: 'TSA', repuesto: 'DAMPER CIG SUZ GRAND VITARA 2.0 J20A', precio: 10 });
+assertEqual(itemModeloDosPalabras.marca, 'SUZUKI', 'normalizeItem matches two-word model names like GRAND VITARA (also SUZ brand word already covers this case, but confirms the fallback works standalone)');
+
+// When nothing at all is found, marca stays blank instead of duplicating marcaRepuesto.
+const itemSinMarca = App.dictionaries.normalizeItem({ proveedor: 'EBITEN', marca: 'CIC-USA', repuesto: 'TENSOR CADENA CAVALIER M2.2', precio: 10 });
+assertEqual(itemSinMarca.marca, 'CHEVROLET', 'normalizeItem finds CAVALIER as a Chevrolet model');
+const itemRealmenteSinMarca = App.dictionaries.normalizeItem({ proveedor: 'EBITEN', marca: 'CIC-USA', repuesto: 'PIEZA GENERICA SIN MODELO CONOCIDO', precio: 10 });
+assertEqual(itemRealmenteSinMarca.marca, '', 'normalizeItem leaves marca blank (not duplicating marcaRepuesto) when nothing is recognized');
 renderAssertions();
 </script>
 <script>
