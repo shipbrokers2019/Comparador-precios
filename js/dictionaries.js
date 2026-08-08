@@ -3,22 +3,24 @@
     marca: {
       'CHE': 'CHEVROLET', 'CHEV': 'CHEVROLET', 'CHEVROLET': 'CHEVROLET', 'GM': 'CHEVROLET',
       'FORD': 'FORD',
-      'TOY': 'TOYOTA', 'TOYOTA': 'TOYOTA',
+      'TOY': 'TOYOTA', 'TOYOT': 'TOYOTA', 'TOYOTA': 'TOYOTA',
       'JEEP': 'JEEP',
       'DOD': 'DODGE', 'DODGE': 'DODGE', 'CHRYSLER': 'DODGE',
       'FIAT': 'FIAT',
-      'RENAULT': 'RENAULT',
+      'REN': 'RENAULT', 'RENAULT': 'RENAULT',
       'HYU': 'HYUNDAI', 'HYUNDAI': 'HYUNDAI',
       'MIT': 'MITSUBISHI', 'MITSUBISHI': 'MITSUBISHI',
-      'MAZDA': 'MAZDA',
+      'MAZ': 'MAZDA', 'MAZDA': 'MAZDA',
       'KIA': 'KIA',
-      'NISSAN': 'NISSAN',
-      'HONDA': 'HONDA',
+      'NIS': 'NISSAN', 'NISSAN': 'NISSAN',
+      'HON': 'HONDA', 'HONDA': 'HONDA',
+      'HINO': 'HINO MOTORS',
       'CHERY': 'CHERY',
       'SUZ': 'SUZUKI', 'SUZUKI': 'SUZUKI',
       'PEUGEOT': 'PEUGEOT',
       'VW': 'VOLKSWAGEN', 'VOLKSWAGEN': 'VOLKSWAGEN',
-      'DAEWOO': 'DAEWOO',
+      'DAE': 'DAEWOO', 'DAEWOO': 'DAEWOO',
+      'ISZ': 'ISUZU', 'ISUZU': 'ISUZU',
     },
     // Model name → vehicle brand, used as a second fallback when the text
     // mentions a model ("SILVERADO", "GRAND VITARA") but not the brand
@@ -37,19 +39,25 @@
       // SUZUKI
       'GRAND VITARA': 'SUZUKI', 'VITARA': 'SUZUKI', 'SWIFT': 'SUZUKI',
       'ESTEEM': 'SUZUKI', 'JIMNY': 'SUZUKI', 'XL5': 'SUZUKI', 'XL7': 'SUZUKI',
-      'WAGON R': 'SUZUKI', 'SUPER CARRY': 'SUZUKI',
+      'WAGON R': 'SUZUKI',
+      'SUPER CARRY': 'CHEVROLET',
+      // ISUZU
+      'CARIBE': 'ISUZU',
       // FORD
       'FIESTA': 'FORD', 'FOCUS': 'FORD', 'ESCORT': 'FORD', 'EXPLORER': 'FORD',
       'RANGER': 'FORD', 'F-150': 'FORD', 'F150': 'FORD', 'F-250': 'FORD',
       'F250': 'FORD', 'F-350': 'FORD', 'F350': 'FORD', 'MUSTANG': 'FORD',
       'TAURUS': 'FORD', 'ECOSPORT': 'FORD', 'FUSION': 'FORD',
+      'TRITON': 'FORD', 'FESTIVA': 'FORD',
       // TOYOTA
-      'COROLLA': 'TOYOTA', 'HILUX': 'TOYOTA', 'FORTUNER': 'TOYOTA',
+      'COROLLA': 'TOYOTA', 'CORO': 'TOYOTA', 'HILUX': 'TOYOTA', 'FORTUNER': 'TOYOTA',
       'CAMRY': 'TOYOTA', 'YARIS': 'TOYOTA', 'TERIOS': 'TOYOTA',
       '4RUNNER': 'TOYOTA', 'RUNNER': 'TOYOTA', 'LAND CRUISER': 'TOYOTA',
       'PRADO': 'TOYOTA', 'RAV4': 'TOYOTA', 'TACOMA': 'TOYOTA',
       'TUNDRA': 'TOYOTA', 'SIENNA': 'TOYOTA', 'STARLET': 'TOYOTA',
       'MERU': 'TOYOTA',
+      // DAEWOO
+      'MATIZ': 'DAEWOO', 'TICO': 'DAEWOO',
       // JEEP
       'GRAND CHEROKEE': 'JEEP', 'CHEROKEE': 'JEEP', 'WRANGLER': 'JEEP',
       'LIBERTY': 'JEEP', 'PATRIOT': 'JEEP', 'COMPASS': 'JEEP', 'COMPAC': 'JEEP',
@@ -61,6 +69,7 @@
       // RENAULT
       'LOGAN': 'RENAULT', 'SANDERO': 'RENAULT', 'DUSTER': 'RENAULT',
       'KANGOO': 'RENAULT', 'CLIO': 'RENAULT', 'MEGANE': 'RENAULT',
+      'TWINGO': 'RENAULT',
       // HYUNDAI
       'ELANTRA': 'HYUNDAI', 'ACCENT': 'HYUNDAI', 'TUCSON': 'HYUNDAI',
       'SANTA FE': 'HYUNDAI', 'SONATA': 'HYUNDAI', 'GETZ': 'HYUNDAI',
@@ -86,6 +95,7 @@
       'SENTRA': 'NISSAN', 'ALTIMA': 'NISSAN', 'XTRAIL': 'NISSAN',
       'X-TRAIL': 'NISSAN', 'FRONTIER': 'NISSAN', 'PATHFINDER': 'NISSAN',
       'VERSA': 'NISSAN', 'TIIDA': 'NISSAN', 'NAVARA': 'NISSAN',
+      'TERRANO': 'NISSAN', 'PATROL': 'NISSAN',
     },
     repuesto: {
       'CONCHA BIELA': 'CONCHAS DE BIELA', 'CONCHAS DE BIELA': 'CONCHAS DE BIELA',
