@@ -212,6 +212,14 @@ assertEqual(resultado.length, 1, 'search.filterAndCalculate: text filter matches
 assertEqual(resultado[0].precioFinalUSD, 600, 'search.filterAndCalculate applies calculator discount to filtered item');
 assertEqual(sinTasa1, [], 'search.filterAndCalculate: no missing rates when tasaTipo is present');
 
+// Plural search term must still find a singular word in the description
+// (and vice versa) — real provider data spells this inconsistently.
+const { resultados: resultadoPlural } = App.search.filterAndCalculate(
+  [{ proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'CONCHA BANCADA TOYOTA 1FZ L6 4.5L', precio: 10 }],
+  providersList, ratesObj, { texto: 'conchas', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
+);
+assertEqual(resultadoPlural.length, 1, 'search.filterAndCalculate: searching "conchas" (plural) finds a repuesto spelled "CONCHA" (singular)');
+
 const { resultados: resultadoMarca } = App.search.filterAndCalculate(items, providersList, ratesObj, {
   texto: '', marca: 'FORD', aplicarEfectivo: false, aplicarProntoPago: false,
 });
