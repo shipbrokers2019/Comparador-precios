@@ -1,7 +1,7 @@
 (function () {
   const DEFAULTS = {
     marca: {
-      'CHE': 'CHEVROLET', 'CHEV': 'CHEVROLET', 'CHEVROLET': 'CHEVROLET',
+      'CHE': 'CHEVROLET', 'CHEV': 'CHEVROLET', 'CHEVROLET': 'CHEVROLET', 'GM': 'CHEVROLET',
       'FORD': 'FORD',
       'TOY': 'TOYOTA', 'TOYOTA': 'TOYOTA',
       'JEEP': 'JEEP',
