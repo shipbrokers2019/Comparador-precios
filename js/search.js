@@ -8,9 +8,16 @@
     const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
     if (palabrasBusqueda.length === 0) return true;
     const palabrasRepuesto = String(repuesto || '').toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean);
+    // The "search word starts with repuesto word" direction only counts
+    // when the repuesto word is at least 4 letters — otherwise short
+    // connector words in the description ("CON", "DE", "LA") would
+    // falsely match almost any search term that happens to start with
+    // them (e.g. "conchas" starts with "con").
+    const LARGO_MINIMO_PALABRA_CORTA = 4;
     return palabrasBusqueda.every((palabraBusqueda) =>
       palabrasRepuesto.some((palabraRepuesto) =>
-        palabraRepuesto.startsWith(palabraBusqueda) || palabraBusqueda.startsWith(palabraRepuesto)
+        palabraRepuesto.startsWith(palabraBusqueda) ||
+        (palabraRepuesto.length >= LARGO_MINIMO_PALABRA_CORTA && palabraBusqueda.startsWith(palabraRepuesto))
       )
     );
   }

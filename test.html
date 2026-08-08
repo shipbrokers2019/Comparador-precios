@@ -220,6 +220,14 @@ const { resultados: resultadoPlural } = App.search.filterAndCalculate(
 );
 assertEqual(resultadoPlural.length, 1, 'search.filterAndCalculate: searching "conchas" (plural) finds a repuesto spelled "CONCHA" (singular)');
 
+// Short connector words in the description ("CON") must NOT falsely match
+// just because the search term happens to start with them.
+const { resultados: resultadoFalsoPositivo } = App.search.filterAndCalculate(
+  [{ proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'EMPACADURA TAPA VALVULA SILVERADO M5.3 CON CHUPONES', precio: 10 }],
+  providersList, ratesObj, { texto: 'conchas', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
+);
+assertEqual(resultadoFalsoPositivo.length, 0, 'search.filterAndCalculate: "conchas" does not falsely match a description containing the short word "CON"');
+
 const { resultados: resultadoMarca } = App.search.filterAndCalculate(items, providersList, ratesObj, {
   texto: '', marca: 'FORD', aplicarEfectivo: false, aplicarProntoPago: false,
 });
