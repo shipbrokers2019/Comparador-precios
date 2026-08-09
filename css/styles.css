@@ -524,7 +524,7 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   overflow-wrap: break-word;
 }
 
-.report-item-precios {
+.report-item-precio {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -535,6 +535,13 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   margin-top: 2px;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.report-item-bs {
+  margin-top: var(--space-1);
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Fixed color order (not a hash): 0 green, 1 blue, 2 orange, 3 purple —

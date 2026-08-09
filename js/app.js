@@ -164,9 +164,10 @@
       <div class="report-item ${coloresPorProveedor[r.proveedor.trim()] || 'provider-color-0'}">
         <div class="report-item-main">
           <span class="report-item-repuesto">${escapeHtml(r.repuesto)}</span>
-          <span class="report-item-precios">$${formatMoney(r.precioFinalUSD)} · Bs ${formatMoney(r.precioFinalBs)}</span>
+          <span class="report-item-precio">$${formatMoney(r.precioFinalUSD)}</span>
         </div>
         <div class="report-item-meta">${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'}</div>
+        <div class="report-item-bs">Bs ${formatMoney(r.precioFinalBs)}</div>
       </div>`).join('');
   }
 
