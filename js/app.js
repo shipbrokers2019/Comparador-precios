@@ -129,6 +129,38 @@
     }
 
     App.app.ultimosResultados = resultados;
+    renderReportPage(resultados, opciones);
+  }
+
+  function renderReportPage(resultados, opciones) {
+    const textoLabel = opciones.texto.trim() ? opciones.texto.trim().toUpperCase() : 'Todos los repuestos';
+    const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
+    document.getElementById('reporte-filtro').innerHTML =
+      `<strong>${escapeHtml(textoLabel)}</strong> · Marca: ${escapeHtml(marcaLabel)}`;
+
+    const lista = document.getElementById('reporte-lista');
+    lista.innerHTML = resultados.length === 0
+      ? '<p class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</p>'
+      : resultados.map((r) => `
+      <div class="report-item ${!r.cumpleMinimo ? 'no-cumple-minimo' : ''}">
+        <div class="report-item-main">
+          <span class="report-item-repuesto">${escapeHtml(r.repuesto)}</span>
+          <span class="report-item-precio">$${r.precioFinalUSD.toFixed(2)}</span>
+        </div>
+        <div class="report-item-meta">
+          ${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'} ·
+          Bs ${r.precioFinalBs.toFixed(2)} · Mínimo: ${r.cumpleMinimo ? 'Sí' : 'No'}
+        </div>
+      </div>`).join('');
+  }
+
+  function switchPage(pageId) {
+    document.querySelectorAll('.page').forEach((page) => {
+      page.hidden = page.id !== pageId;
+    });
+    document.querySelectorAll('.nav-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.page === pageId);
+    });
   }
 
   function init() {
@@ -149,6 +181,10 @@
 
     ['filtro-texto', 'filtro-marca', 'chk-efectivo', 'chk-pronto-pago'].forEach((id) => {
       document.getElementById(id).addEventListener('input', renderResults);
+    });
+
+    document.querySelectorAll('.nav-btn').forEach((btn) => {
+      btn.addEventListener('click', () => switchPage(btn.dataset.page));
     });
 
     document.getElementById('btn-exportar').addEventListener('click', () => {
