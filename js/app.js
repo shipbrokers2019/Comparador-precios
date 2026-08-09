@@ -154,7 +154,7 @@
     const textoLabel = opciones.texto.trim() ? opciones.texto.trim().toUpperCase() : 'Todos los repuestos';
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
     document.getElementById('reporte-filtro').innerHTML =
-      `<strong>${escapeHtml(textoLabel)}</strong> · Marca: ${escapeHtml(marcaLabel)}`;
+      `<strong>${escapeHtml(textoLabel)}</strong><br>Marca: ${escapeHtml(marcaLabel)}`;
 
     const coloresPorProveedor = construirColoresPorProveedor(providers);
     const lista = document.getElementById('reporte-lista');
@@ -166,7 +166,7 @@
           <span class="report-item-repuesto">${escapeHtml(r.repuesto)}</span>
           <span class="report-item-precio">$${formatMoney(r.precioFinalUSD)}</span>
         </div>
-        <div class="report-item-meta">${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'}</div>
+        <div class="report-item-meta">${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marcaRepuesto) || 'sin identificar'}</div>
         <div class="report-item-bs">Bs ${formatMoney(r.precioFinalBs)}</div>
       </div>`).join('');
   }
