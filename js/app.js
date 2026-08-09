@@ -5,6 +5,10 @@
     return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  function formatMoney(numero) {
+    return numero.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   function setStatusPill(text, state) {
     const pill = document.getElementById('sync-status-pill');
     document.getElementById('sync-status').textContent = text;
@@ -113,9 +117,9 @@
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
         <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
         <td>${escapeHtml(r.marcaRepuesto)}</td>
-        <td>$${r.precioOriginal.toFixed(2)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
-        <td>${r.tasaAplicada}</td><td>$${r.precioFinalUSD.toFixed(2)}</td>
-        <td>${r.precioFinalBs.toFixed(2)}</td>
+        <td>$${formatMoney(r.precioOriginal)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
+        <td>${r.tasaAplicada}</td><td>$${formatMoney(r.precioFinalUSD)}</td>
+        <td>${formatMoney(r.precioFinalBs)}</td>
         <td><span class="badge ${r.cumpleMinimo ? 'badge-ok' : 'badge-warn'}">${r.cumpleMinimo ? 'Sí' : 'No'}</span></td>
       </tr>`).join('');
 
@@ -129,35 +133,40 @@
     }
 
     App.app.ultimosResultados = resultados;
-    renderReportPage(resultados, opciones);
+    renderReportPage(resultados, opciones, providers);
   }
 
-  // Stable per-provider color: same provider name always lands on the
-  // same swatch across re-renders, without keeping a lookup table around.
-  const CANTIDAD_COLORES_PROVEEDOR = 6;
-  function colorParaProveedor(nombre) {
-    let hash = 0;
-    for (let i = 0; i < nombre.length; i++) hash = (hash * 31 + nombre.charCodeAt(i)) >>> 0;
-    return 'provider-color-' + (hash % CANTIDAD_COLORES_PROVEEDOR);
+  // Fixed color order requested by the user: 1st provider added = light
+  // green, 2nd = light blue, 3rd = light orange, 4th = light purple.
+  // Beyond that, more light colors are picked automatically in the same
+  // spirit. Order follows App.providers.getAll() (the order they were
+  // configured in), not the order they happen to appear in the results.
+  const CANTIDAD_COLORES_PROVEEDOR = 8;
+  function construirColoresPorProveedor(providers) {
+    const mapa = {};
+    providers.forEach((p, i) => {
+      mapa[p.nombre.trim()] = 'provider-color-' + (i % CANTIDAD_COLORES_PROVEEDOR);
+    });
+    return mapa;
   }
 
-  function renderReportPage(resultados, opciones) {
+  function renderReportPage(resultados, opciones, providers) {
     const textoLabel = opciones.texto.trim() ? opciones.texto.trim().toUpperCase() : 'Todos los repuestos';
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
     document.getElementById('reporte-filtro').innerHTML =
       `<strong>${escapeHtml(textoLabel)}</strong> · Marca: ${escapeHtml(marcaLabel)}`;
 
+    const coloresPorProveedor = construirColoresPorProveedor(providers);
     const lista = document.getElementById('reporte-lista');
     lista.innerHTML = resultados.length === 0
       ? '<p class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</p>'
       : resultados.map((r) => `
-      <div class="report-item ${colorParaProveedor(r.proveedor)}">
+      <div class="report-item ${coloresPorProveedor[r.proveedor.trim()] || 'provider-color-0'}">
         <div class="report-item-main">
           <span class="report-item-repuesto">${escapeHtml(r.repuesto)}</span>
-          <span class="report-item-precio">$${r.precioFinalUSD.toFixed(2)}</span>
+          <span class="report-item-precios">$${formatMoney(r.precioFinalUSD)} · Bs ${formatMoney(r.precioFinalBs)}</span>
         </div>
         <div class="report-item-meta">${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'}</div>
-        <div class="report-item-bs">Bs ${r.precioFinalBs.toFixed(2)}</div>
       </div>`).join('');
   }
 
