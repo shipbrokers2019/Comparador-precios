@@ -132,6 +132,15 @@
     renderReportPage(resultados, opciones);
   }
 
+  // Stable per-provider color: same provider name always lands on the
+  // same swatch across re-renders, without keeping a lookup table around.
+  const CANTIDAD_COLORES_PROVEEDOR = 6;
+  function colorParaProveedor(nombre) {
+    let hash = 0;
+    for (let i = 0; i < nombre.length; i++) hash = (hash * 31 + nombre.charCodeAt(i)) >>> 0;
+    return 'provider-color-' + (hash % CANTIDAD_COLORES_PROVEEDOR);
+  }
+
   function renderReportPage(resultados, opciones) {
     const textoLabel = opciones.texto.trim() ? opciones.texto.trim().toUpperCase() : 'Todos los repuestos';
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
@@ -142,15 +151,13 @@
     lista.innerHTML = resultados.length === 0
       ? '<p class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</p>'
       : resultados.map((r) => `
-      <div class="report-item ${!r.cumpleMinimo ? 'no-cumple-minimo' : ''}">
+      <div class="report-item ${colorParaProveedor(r.proveedor)}">
         <div class="report-item-main">
           <span class="report-item-repuesto">${escapeHtml(r.repuesto)}</span>
           <span class="report-item-precio">$${r.precioFinalUSD.toFixed(2)}</span>
         </div>
-        <div class="report-item-meta">
-          ${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'} ·
-          Bs ${r.precioFinalBs.toFixed(2)} · Mínimo: ${r.cumpleMinimo ? 'Sí' : 'No'}
-        </div>
+        <div class="report-item-meta">${escapeHtml(r.proveedor)} · Marca ${escapeHtml(r.marca) || 'sin identificar'}</div>
+        <div class="report-item-bs">Bs ${r.precioFinalBs.toFixed(2)}</div>
       </div>`).join('');
   }
 

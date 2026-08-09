@@ -503,8 +503,6 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   background: var(--surface);
 }
 
-.report-item.no-cumple-minimo { background: var(--warning-bg); border-color: var(--warning-border); }
-
 .report-item-main {
   display: flex;
   align-items: baseline;
@@ -524,6 +522,31 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   margin-top: 2px;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.report-item-bs {
+  margin-top: var(--space-1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* One tinted background per provider (stable hash → 0-5), so
+   comparing several providers at a glance reads by color, not just
+   by re-reading the name on every card. */
+.report-item.provider-color-0 { background: oklch(0.94 0.03 230); border-color: oklch(0.82 0.05 230); }
+.report-item.provider-color-1 { background: oklch(0.94 0.04 165); border-color: oklch(0.80 0.07 165); }
+.report-item.provider-color-2 { background: oklch(0.95 0.05 95);  border-color: oklch(0.83 0.09 95); }
+.report-item.provider-color-3 { background: oklch(0.94 0.04 300); border-color: oklch(0.81 0.07 300); }
+.report-item.provider-color-4 { background: oklch(0.94 0.05 350); border-color: oklch(0.81 0.08 350); }
+.report-item.provider-color-5 { background: oklch(0.94 0.04 200); border-color: oklch(0.80 0.07 200); }
+
+@media (prefers-color-scheme: dark) {
+  .report-item.provider-color-0 { background: oklch(0.28 0.045 230); border-color: oklch(0.38 0.06 230); }
+  .report-item.provider-color-1 { background: oklch(0.28 0.05 165); border-color: oklch(0.38 0.07 165); }
+  .report-item.provider-color-2 { background: oklch(0.30 0.06 95);  border-color: oklch(0.40 0.09 95); }
+  .report-item.provider-color-3 { background: oklch(0.28 0.05 300); border-color: oklch(0.38 0.07 300); }
+  .report-item.provider-color-4 { background: oklch(0.28 0.06 350); border-color: oklch(0.38 0.08 350); }
+  .report-item.provider-color-5 { background: oklch(0.28 0.05 200); border-color: oklch(0.38 0.07 200); }
 }
 
 /* ============================================================
