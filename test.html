@@ -220,6 +220,14 @@ const { resultados: resultadoPlural } = App.search.filterAndCalculate(
 );
 assertEqual(resultadoPlural.length, 1, 'search.filterAndCalculate: searching "conchas" (plural) finds a repuesto spelled "CONCHA" (singular)');
 
+// Connector words in the search phrase ("de") must not be required to
+// literally appear in the description — most descriptions never spell them.
+const { resultados: resultadoConector } = App.search.filterAndCalculate(
+  [{ proveedor: 'ACME', marca: 'FORD', repuesto: 'CONCHA BANCADA FORD F150', precio: 10 }],
+  providersList, ratesObj, { texto: 'concha de bancada', marca: 'FORD', aplicarEfectivo: false, aplicarProntoPago: false }
+);
+assertEqual(resultadoConector.length, 1, 'search.filterAndCalculate: "concha de bancada" + marca FORD matches despite "de" not appearing in the description');
+
 // Short connector words in the description ("CON") must NOT falsely match
 // just because the search term happens to start with them.
 const { resultados: resultadoFalsoPositivo } = App.search.filterAndCalculate(

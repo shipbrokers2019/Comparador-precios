@@ -4,8 +4,15 @@
   // "PISTON"). Match word-by-word instead of the whole phrase, and treat
   // either word as a valid prefix of the other so "concha" finds
   // "conchas" and "conchas" finds "concha".
+  // Grammatical connector words. Requiring these to literally appear in
+  // the description breaks searches like "concha de bancada" — most
+  // descriptions never spell out "de", so it's dropped from the search
+  // terms instead of being treated as a required word.
+  const PALABRAS_CONECTORAS = new Set(['DE', 'DEL', 'LA', 'LAS', 'EL', 'LOS', 'Y', 'CON', 'PARA', 'SIN', 'A']);
+
   function coincideTextoParcial(texto, repuesto) {
-    const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+    const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/\s+/).filter(Boolean)
+      .filter((palabra) => !PALABRAS_CONECTORAS.has(palabra));
     if (palabrasBusqueda.length === 0) return true;
     const palabrasRepuesto = String(repuesto || '').toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean);
     // The "search word starts with repuesto word" direction only counts
