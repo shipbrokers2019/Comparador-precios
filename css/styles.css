@@ -83,6 +83,9 @@ body {
   color: var(--ink);
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  /* Safety net: the page itself must never scroll sideways. Only the
+     table has an intentional horizontal scroll, inside .table-scroll. */
+  overflow-x: hidden;
 }
 
 .app {
@@ -490,10 +493,13 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
 
 .report-filtro strong { color: var(--ink); font-weight: 600; }
 
+.report-card { min-width: 0; }
+
 .report-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .report-item {
@@ -501,6 +507,7 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  min-width: 0;
 }
 
 .report-item-main {
@@ -508,9 +515,14 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
+  min-width: 0;
 }
 
-.report-item-repuesto { font-weight: 600; }
+.report-item-repuesto {
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
 
 .report-item-precio {
   font-weight: 700;
