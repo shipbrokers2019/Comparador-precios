@@ -522,6 +522,7 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   font-weight: 600;
   min-width: 0;
   overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-item-precio {
@@ -533,12 +534,16 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
 
 .report-item-repuesto {
   margin-top: 2px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-item-meta {
   margin-top: 2px;
   font-size: 0.8rem;
   color: var(--muted);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-item-bs {
