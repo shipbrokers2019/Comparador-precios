@@ -518,7 +518,7 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   min-width: 0;
 }
 
-.report-item-repuesto {
+.report-item-proveedor {
   font-weight: 600;
   min-width: 0;
   overflow-wrap: break-word;
@@ -531,6 +531,10 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
   white-space: nowrap;
 }
 
+.report-item-repuesto {
+  margin-top: 2px;
+}
+
 .report-item-meta {
   margin-top: 2px;
   font-size: 0.8rem;
@@ -540,7 +544,6 @@ tr.sin-normalizar td:nth-child(3) { color: var(--danger-ink); }
 .report-item-bs {
   margin-top: var(--space-1);
   text-align: right;
-  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
