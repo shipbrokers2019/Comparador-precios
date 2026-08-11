@@ -116,7 +116,7 @@
       ? '<tr><td colspan="10" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
       : resultados.map((r) => `
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
-        <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.marca)}</td>
+        <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${escapeHtml(r.codigo) || 'Sin código'}</td>
         <td>${escapeHtml(r.marcaRepuesto)}</td>
         <td>$${formatMoney(r.precioOriginal)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${formatMoney(r.precioFinalUSD)}</td>
