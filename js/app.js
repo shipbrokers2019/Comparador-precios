@@ -168,7 +168,7 @@
           <span class="report-item-precio">$${formatMoney(r.precioFinalUSD)}</span>
         </div>
         <div class="report-item-repuesto">${escapeHtml(r.repuesto)}</div>
-        <div class="report-item-meta">Marca ${escapeHtml(r.marcaRepuesto) || 'sin identificar'}</div>
+        <div class="report-item-meta">${r.codigosEquivalentes && r.codigosEquivalentes.length ? 'Equivale a: ' + escapeHtml(r.codigosEquivalentes.join(', ')) : 'Sin código'}</div>
         <div class="report-item-bs">Bs ${formatMoney(r.precioFinalBs)}</div>
       </div>`).join('');
   }
