@@ -158,6 +158,17 @@
     return null;
   }
 
+  // Some provider files have no dedicated código column at all — the part
+  // code is only present as the last token of the repuesto description
+  // itself (e.g. "CONCHA BANCADA SUZ GRAND VITARA H20A M662A-STD"). Codes
+  // reliably contain a dash plus letters/digits ("M662A-STD",
+  // "12340-85FB4-050"); plain description words never do, so requiring a
+  // dash keeps this from grabbing "H20A" or "SUZ" by mistake.
+  function extraerCodigoDeTexto(repuesto) {
+    const coincidencias = String(repuesto || '').toUpperCase().match(/\b[A-Z0-9]+(?:-[A-Z0-9]+)+\b/g);
+    return coincidencias && coincidencias.length ? coincidencias[coincidencias.length - 1] : '';
+  }
+
   function normalizeItem(rawItem) {
     const dict = getAll();
     const marcaResult = normalizeTerm(rawItem.marca, dict.marca);
@@ -187,9 +198,10 @@
       repuestoNormalizado: repuestoResult.matched,
       // Trimmed/uppercased for exact-match lookups against the
       // equivalencias table, same normalization the table itself uses.
-      codigo: String(rawItem.codigo || '').trim().toUpperCase(),
+      codigo: String(rawItem.codigo || '').trim().toUpperCase()
+        || extraerCodigoDeTexto(repuestoResult.value),
     };
   }
 
-  window.App.dictionaries = { getAll, addSynonym, normalizeTerm, normalizeItem, extraerMarcaDeTexto, extraerMarcaDeModelo };
+  window.App.dictionaries = { getAll, addSynonym, normalizeTerm, normalizeItem, extraerMarcaDeTexto, extraerMarcaDeModelo, extraerCodigoDeTexto };
 })();
