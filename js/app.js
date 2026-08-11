@@ -108,7 +108,8 @@
       aplicarEfectivo: document.getElementById('chk-efectivo').checked,
       aplicarProntoPago: document.getElementById('chk-pronto-pago').checked,
     };
-    const { resultados, proveedoresSinTasa } = App.search.filterAndCalculate(items, providers, rates, opciones);
+    const equivalencias = App.sync.getCachedEquivalencias();
+    const { resultados, proveedoresSinTasa } = App.search.filterAndCalculate(items, providers, rates, opciones, equivalencias);
 
     const tbody = document.getElementById('tbody-resultados');
     tbody.innerHTML = resultados.length === 0

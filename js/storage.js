@@ -6,6 +6,7 @@
     PROVEEDORES: 'proveedores',
     TASAS: 'tasas',
     LAST_SYNC: 'lastSync',
+    EQUIVALENCIAS: 'equivalencias',
   };
 
   function get(key, defaultValue) {

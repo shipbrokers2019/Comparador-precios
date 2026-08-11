@@ -170,9 +170,12 @@ renderAssertions();
 window.fetch = function (url) {
   return Promise.resolve({
     ok: true,
-    json: () => Promise.resolve([
-      { proveedor: 'ACME', filas: [{ marca: 'CHE', repuesto: 'PISTON', precio: 100 }] },
-    ]),
+    json: () => Promise.resolve({
+      proveedores: [
+        { proveedor: 'ACME', filas: [{ marca: 'CHE', repuesto: 'PISTON', precio: 100, codigo: 'M662A-050' }] },
+      ],
+      equivalencias: { 'M662A-050': ['M662A-050', '12340-85FB4-050'], '12340-85FB4-050': ['M662A-050', '12340-85FB4-050'] },
+    }),
   });
 };
 
@@ -184,6 +187,12 @@ App.sync.syncNow().then(function (result) {
   assertEqual(items.length, 1, 'sync.getCachedItems returns the stored items');
   assertEqual(items[0].marca, 'CHEVROLET', 'sync.getCachedItems items are normalized');
   assertEqual(items[0].proveedor, 'ACME', 'sync.getCachedItems keeps proveedor name');
+  assertEqual(items[0].codigo, 'M662A-050', 'sync.getCachedItems keeps the provider\'s own codigo');
+  assertEqual(
+    App.sync.getCachedEquivalencias(),
+    { 'M662A-050': ['M662A-050', '12340-85FB4-050'], '12340-85FB4-050': ['M662A-050', '12340-85FB4-050'] },
+    'sync.getCachedEquivalencias returns the equivalencias table from the payload'
+  );
 
   // Now simulate offline: fetch rejects, cache must survive untouched.
   window.fetch = function () { return Promise.reject(new Error('offline')); };
@@ -257,6 +266,38 @@ const { resultados: resultadoSinTasa, proveedoresSinTasa: sinTasa2 } = App.searc
 );
 assertEqual(resultadoSinTasa.length, 0, 'search.filterAndCalculate excludes items whose provider rate is missing');
 assertEqual(sinTasa2, ['ACME'], 'search.filterAndCalculate reports the provider names with a missing rate');
+
+// Code search: two providers list the same physical part under different
+// OEM codes. The equivalencias table links them, so searching for either
+// code finds both — even though the repuesto text differs completely.
+const itemsConCodigo = [
+  { proveedor: 'ACME', marca: 'CHEVROLET', repuesto: 'CONCHA BANCADA', precio: 20, codigo: 'M662A-050' },
+  { proveedor: 'OTRO', marca: 'CHEVROLET', repuesto: 'ALGO TOTALMENTE DISTINTO', precio: 25, codigo: '12340-85FB4-050' },
+];
+const equivalenciasTest = { 'M662A-050': ['M662A-050', '12340-85FB4-050'], '12340-85FB4-050': ['M662A-050', '12340-85FB4-050'] };
+const providersConOtro = providersList.concat([
+  { id: 'p2', nombre: 'OTRO', descuentoEfectivoPercent: 0, descuentoProntoPagoPercent: 0, descuentosAcumulables: false, montoMinimo: 0, tasaTipo: 'BCV_USD' },
+]);
+const { resultados: resultadoPorCodigo } = App.search.filterAndCalculate(
+  itemsConCodigo, providersConOtro, ratesObj,
+  { texto: '12340-85FB4-050', marca: '', aplicarEfectivo: false, aplicarProntoPago: false },
+  equivalenciasTest
+);
+assertEqual(resultadoPorCodigo.length, 2, 'search.filterAndCalculate: searching one OEM code finds both providers via the equivalencias table, despite unrelated repuesto text');
+
+const { resultados: resultadoCodigoExacto } = App.search.filterAndCalculate(
+  itemsConCodigo, providersConOtro, ratesObj,
+  { texto: 'M662A-050', marca: '', aplicarEfectivo: false, aplicarProntoPago: false },
+  equivalenciasTest
+);
+assertEqual(resultadoCodigoExacto.length, 2, 'search.filterAndCalculate: searching the other equivalent code also finds both');
+
+const { resultados: resultadoSinEquivalencias } = App.search.filterAndCalculate(
+  itemsConCodigo, providersConOtro, ratesObj,
+  { texto: 'M662A-050', marca: '', aplicarEfectivo: false, aplicarProntoPago: false }
+  // no equivalencias argument at all — must not throw, and must still match the exact code.
+);
+assertEqual(resultadoSinEquivalencias.length, 1, 'search.filterAndCalculate: with no equivalencias table at all, still matches the exact code (no crash)');
 renderAssertions();
 </script>
 <script src="js/export.js"></script>

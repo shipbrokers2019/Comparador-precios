@@ -9,9 +9,9 @@
     return App.storage.get(URL_KEY, '');
   }
 
-  function flattenAndNormalize(payload) {
+  function flattenAndNormalize(proveedores) {
     const items = [];
-    payload.forEach((proveedorBloque) => {
+    proveedores.forEach((proveedorBloque) => {
       proveedorBloque.filas.forEach((fila) => {
         items.push(
           App.dictionaries.normalizeItem({
@@ -19,6 +19,7 @@
             marca: fila.marca,
             repuesto: fila.repuesto,
             precio: fila.precio,
+            codigo: fila.codigo,
           })
         );
       });
@@ -37,8 +38,9 @@
           if (payload && payload.error) {
             return { ok: false, error: payload.error };
           }
-          const items = flattenAndNormalize(payload);
+          const items = flattenAndNormalize(payload.proveedores || []);
           App.storage.set(App.storage.KEYS.LISTAS, items);
+          App.storage.set(App.storage.KEYS.EQUIVALENCIAS, payload.equivalencias || {});
           App.storage.set(App.storage.KEYS.LAST_SYNC, new Date().toISOString());
           return { ok: true, itemCount: items.length };
         });
@@ -50,6 +52,10 @@
     return App.storage.get(App.storage.KEYS.LISTAS, []);
   }
 
+  function getCachedEquivalencias() {
+    return App.storage.get(App.storage.KEYS.EQUIVALENCIAS, {});
+  }
+
   function getLastSyncLabel() {
     const last = App.storage.get(App.storage.KEYS.LAST_SYNC, null);
     if (!last) return 'Sin sincronizar';
@@ -57,5 +63,5 @@
     return 'Datos desde: ' + d.toLocaleString('es-VE');
   }
 
-  window.App.sync = { setWebAppUrl, getWebAppUrl, syncNow, getCachedItems, getLastSyncLabel };
+  window.App.sync = { setWebAppUrl, getWebAppUrl, syncNow, getCachedItems, getCachedEquivalencias, getLastSyncLabel };
 })();

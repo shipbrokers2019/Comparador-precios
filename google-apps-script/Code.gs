@@ -2,10 +2,12 @@
 // instructions below — this file is not loaded by index.html directly.
 
 var FOLDER_NAME = 'LISTAS A EVALUAR';
+var EQUIVALENCIAS_SHEET_NAME = 'EQUIVALENCIAS';
 var HEADER_ALIASES = {
   marca: ['marca', 'make', 'vehiculo', 'vehículo'],
   repuesto: ['repuesto', 'descripcion', 'descripción', 'nombre', 'producto'],
   precio: ['precio', 'price', 'valor', 'pvp'],
+  codigo: ['codigo', 'código', 'sku', 'referencia', 'parte'],
 };
 
 function doGet(e) {
@@ -36,8 +38,17 @@ function doGet(e) {
       }
     }
 
+    var equivalencias = {};
+    try {
+      equivalencias = leerEquivalencias();
+    } catch (eqErr) {
+      // A missing/broken EQUIVALENCIAS sheet must not break the price sync
+      // — equivalent-code search just falls back to matching only the
+      // exact code typed, same as if no equivalences existed yet.
+    }
+
     return ContentService
-      .createTextOutput(JSON.stringify(resultado))
+      .createTextOutput(JSON.stringify({ proveedores: resultado, equivalencias: equivalencias }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService
@@ -98,6 +109,7 @@ function filasDesdeValores(values) {
     if (!columnas) continue; // no header found yet: skip title/logo rows
 
     var marca = columnas.marca !== -1 ? fila[columnas.marca] : '';
+    var codigo = columnas.codigo !== -1 ? fila[columnas.codigo] : '';
     var repuesto = fila[columnas.repuesto];
     var precio = fila[columnas.precio];
     // Skip rows with no usable price: section titles and blank separator
@@ -113,12 +125,15 @@ function filasDesdeValores(values) {
       marca: String(marca || ''),
       repuesto: String(repuesto || ''),
       precio: Number(precio) || 0,
+      codigo: String(codigo || ''),
     });
   }
 
   if (!columnas) {
     // Never found any recognizable header anywhere in the file: fall back
     // to treating every row as data, in column order marca/repuesto/precio.
+    // No codigo column in this fallback — there's no reliable position for
+    // it without a real header to detect it by name.
     filas = [];
     for (var j = 0; j < values.length; j++) {
       var fallbackFila = values[j];
@@ -128,6 +143,7 @@ function filasDesdeValores(values) {
         marca: String(fallbackFila[0] || ''),
         repuesto: String(fallbackFila[1] || ''),
         precio: Number(fallbackPrecio) || 0,
+        codigo: '',
       });
     }
   }
@@ -143,7 +159,7 @@ function filasDesdeValores(values) {
 var LARGO_MAXIMO_ENCABEZADO = 30;
 
 function detectarColumnas(headerRow) {
-  var indices = { marca: -1, repuesto: -1, precio: -1 };
+  var indices = { marca: -1, repuesto: -1, precio: -1, codigo: -1 };
   Object.keys(HEADER_ALIASES).forEach(function (campo) {
     HEADER_ALIASES[campo].forEach(function (alias) {
       for (var i = 0; i < headerRow.length; i++) {
@@ -173,7 +189,13 @@ function detectarColumnas(headerRow) {
   // force those files into the wrong-columns positional fallback instead
   // of correctly reading their real repuesto/precio columns.
   var encontradasPorNombre = indices.repuesto !== -1 && indices.precio !== -1;
-  return { marca: indices.marca, repuesto: indices.repuesto, precio: indices.precio, encontradasPorNombre: encontradasPorNombre };
+  return {
+    marca: indices.marca,
+    repuesto: indices.repuesto,
+    precio: indices.precio,
+    codigo: indices.codigo,
+    encontradasPorNombre: encontradasPorNombre,
+  };
 }
 
 // ============================================================
@@ -251,4 +273,46 @@ function obtenerTasaBinance() {
   var suma = 0;
   for (var j = 0; j < precios.length; j++) suma += precios[j];
   return Math.round((suma / precios.length) * 100) / 100;
+}
+
+// ============================================================
+// Equivalencias de códigos OEM: una Hoja de Google llamada
+// "EQUIVALENCIAS" (fuera de la carpeta "LISTAS A EVALUAR", para que el
+// sync de proveedores no la confunda con una lista de precios), con dos
+// columnas: Codigo y Grupo. Todas las filas que comparten el mismo
+// "Grupo" son códigos equivalentes entre sí.
+// ============================================================
+
+function leerEquivalencias() {
+  var archivos = DriveApp.getFilesByName(EQUIVALENCIAS_SHEET_NAME);
+  if (!archivos.hasNext()) return {};
+  var archivo = archivos.next();
+
+  var sheet = SpreadsheetApp.openById(archivo.getId()).getSheets()[0];
+  var values = sheet.getDataRange().getValues();
+  if (values.length < 2) return {};
+
+  var headerRow = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
+  var idxCodigo = headerRow.indexOf('codigo') !== -1 ? headerRow.indexOf('codigo') : headerRow.indexOf('código');
+  var idxGrupo = headerRow.indexOf('grupo');
+  if (idxCodigo === -1 || idxGrupo === -1) return {};
+
+  // First pass: group codes by their "Grupo" value.
+  var grupos = {};
+  for (var i = 1; i < values.length; i++) {
+    var codigo = String(values[i][idxCodigo] || '').trim().toUpperCase();
+    var grupo = String(values[i][idxGrupo] || '').trim();
+    if (!codigo || !grupo) continue;
+    if (!grupos[grupo]) grupos[grupo] = [];
+    grupos[grupo].push(codigo);
+  }
+
+  // Second pass: expand into codigo -> [every code in its group, including itself].
+  var equivalencias = {};
+  Object.keys(grupos).forEach(function (grupo) {
+    grupos[grupo].forEach(function (codigo) {
+      equivalencias[codigo] = grupos[grupo];
+    });
+  });
+  return equivalencias;
 }

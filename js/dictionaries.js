@@ -185,6 +185,9 @@
       marcaRepuesto: String(rawItem.marca || '').trim(),
       repuesto: repuestoResult.value,
       repuestoNormalizado: repuestoResult.matched,
+      // Trimmed/uppercased for exact-match lookups against the
+      // equivalencias table, same normalization the table itself uses.
+      codigo: String(rawItem.codigo || '').trim().toUpperCase(),
     };
   }
 

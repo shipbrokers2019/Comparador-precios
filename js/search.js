@@ -29,11 +29,26 @@
     );
   }
 
-  function filterAndCalculate(items, providersList, rates, opciones) {
+  // The search box doubles as a code search: if the typed text exactly
+  // matches an item's own code, or matches a code in the same
+  // equivalencias group as the item's code (different providers often use
+  // different OEM/reference numbers for the same physical part), it's a
+  // match — independent of whatever the text-based repuesto match found.
+  function coincideCodigo(texto, itemCodigo, equivalencias) {
+    const busqueda = String(texto || '').trim().toUpperCase();
+    if (!busqueda || !itemCodigo) return false;
+    if (itemCodigo === busqueda) return true;
+    const grupo = equivalencias[busqueda];
+    return !!grupo && grupo.indexOf(itemCodigo) !== -1;
+  }
+
+  function filterAndCalculate(items, providersList, rates, opciones, equivalencias) {
     const marca = (opciones.marca || '').trim().toUpperCase();
+    const equivalenciasSeguras = equivalencias || {};
 
     const filtrados = items.filter((item) => {
-      const coincideTexto = coincideTextoParcial(opciones.texto, item.repuesto);
+      const coincideTexto = coincideTextoParcial(opciones.texto, item.repuesto) ||
+        coincideCodigo(opciones.texto, item.codigo, equivalenciasSeguras);
       const coincideMarca = !marca || item.marca.toUpperCase() === marca;
       return coincideTexto && coincideMarca;
     });
