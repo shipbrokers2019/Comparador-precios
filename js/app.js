@@ -134,7 +134,7 @@
     }
 
     App.app.ultimosResultados = resultados;
-    renderReportPage(resultados, opciones, providers);
+    renderReportPage(resultados, opciones, providers, equivalencias);
   }
 
   // Fixed color order requested by the user: 1st provider added = light
@@ -151,8 +151,13 @@
     return mapa;
   }
 
-  function renderReportPage(resultados, opciones, providers) {
-    const textoLabel = opciones.texto.trim() ? opciones.texto.trim().toUpperCase() : 'Todos los repuestos';
+  function renderReportPage(resultados, opciones, providers, equivalencias) {
+    const busquedaCruda = opciones.texto.trim().toUpperCase();
+    // If the searched text is itself a known code, show every OEM code
+    // equivalent to it (not just the raw text the user typed) — that's
+    // the whole point of searching by code in the first place.
+    const grupoBuscado = busquedaCruda && equivalencias[busquedaCruda];
+    const textoLabel = grupoBuscado ? grupoBuscado.join(', ') : (busquedaCruda || 'Todos los repuestos');
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
     document.getElementById('reporte-filtro').innerHTML =
       `<strong>${escapeHtml(textoLabel)}</strong><br>Marca: ${escapeHtml(marcaLabel)}`;
