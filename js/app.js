@@ -113,10 +113,12 @@
 
     const tbody = document.getElementById('tbody-resultados');
     tbody.innerHTML = resultados.length === 0
-      ? '<tr><td colspan="10" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
+      ? '<tr><td colspan="11" class="empty-state">Sin resultados. Sincronizá, cargá un proveedor, o ajustá el filtro.</td></tr>'
       : resultados.map((r) => `
       <tr class="${!r.cumpleMinimo ? 'no-cumple-minimo' : ''} ${!r.marcaNormalizada || !r.repuestoNormalizado ? 'sin-normalizar' : ''}">
-        <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td><td>${r.codigosEquivalentes && r.codigosEquivalentes.length ? escapeHtml(r.codigosEquivalentes.join(', ')) : 'Sin código'}</td>
+        <td>${escapeHtml(r.proveedor)}</td><td>${escapeHtml(r.repuesto)}</td>
+        <td>${r.codigo ? escapeHtml(r.codigo) : 'Sin código'}</td>
+        <td>${escapeHtml((r.codigosEquivalentes || []).filter((c) => c !== r.codigo).join(', '))}</td>
         <td>${escapeHtml(r.marcaRepuesto)}</td>
         <td>$${formatMoney(r.precioOriginal)}</td><td>${escapeHtml(r.descuentosAplicados)}</td>
         <td>${r.tasaAplicada}</td><td>$${formatMoney(r.precioFinalUSD)}</td>
@@ -173,7 +175,10 @@
           <span class="report-item-precio">$${formatMoney(r.precioFinalUSD)}</span>
         </div>
         <div class="report-item-repuesto">${escapeHtml(r.repuesto)}</div>
-        <div class="report-item-meta">${r.codigosEquivalentes && r.codigosEquivalentes.length ? 'Equivale a: ' + escapeHtml(r.codigosEquivalentes.join(', ')) : 'Sin código'}</div>
+        <div class="report-item-meta">Código: ${r.codigo ? escapeHtml(r.codigo) : 'Sin código'}</div>
+        ${(r.codigosEquivalentes || []).filter((c) => c !== r.codigo).length
+          ? `<div class="report-item-meta">Equivalencia: ${escapeHtml((r.codigosEquivalentes || []).filter((c) => c !== r.codigo).join(', '))}</div>`
+          : ''}
         <div class="report-item-bs">Bs ${formatMoney(r.precioFinalBs)}</div>
       </div>`).join('');
   }
