@@ -177,7 +177,7 @@
         <div class="report-item-repuesto">${escapeHtml(r.repuesto)}</div>
         <div class="report-item-meta">Código: ${r.codigo ? escapeHtml(r.codigo) : 'Sin código'}</div>
         ${(r.codigosEquivalentes || []).filter((c) => c !== r.codigo).length
-          ? `<div class="report-item-meta">Equivalencia: ${escapeHtml((r.codigosEquivalentes || []).filter((c) => c !== r.codigo).join(', '))}</div>`
+          ? `<div class="report-item-meta">Equivalencia OEM: ${escapeHtml((r.codigosEquivalentes || []).filter((c) => c !== r.codigo).join(', '))}</div>`
           : ''}
         ${r.descripcionWeb ? `<div class="report-item-meta">Descripción: ${escapeHtml(r.descripcionWeb)}</div>` : ''}
         ${r.motorCompletoWeb ? `<div class="report-item-meta">Motor: ${escapeHtml(r.motorCompletoWeb)}</div>` : ''}
