@@ -36,16 +36,19 @@
   }
 
   // The search box doubles as a code search: if the typed text exactly
-  // matches an item's own code, or matches a code in the same
-  // equivalencias group as the item's code (different providers often use
-  // different OEM/reference numbers for the same physical part), it's a
-  // match — independent of whatever the text-based repuesto match found.
-  function coincideCodigo(texto, itemCodigo, equivalencias) {
+  // matches an item's own code, it's a match — independent of whatever
+  // the text-based repuesto match found. This is intentionally an exact
+  // match only: expanding to the whole equivalencias group here would
+  // also surface sibling size-variant rows of the same manufacturer code
+  // (e.g. searching "M043A-075" pulling in "M043A-STD"/"M043A-050"),
+  // which is not what a specific-code search should return. The
+  // cross-supplier equivalencia codes for a matched item are still shown
+  // via codigosEquivalentes below — this only affects what counts as a
+  // search match.
+  function coincideCodigo(texto, itemCodigo) {
     const busqueda = String(texto || '').trim().toUpperCase();
     if (!busqueda || !itemCodigo) return false;
-    if (itemCodigo === busqueda) return true;
-    const grupo = equivalencias[busqueda];
-    return !!grupo && grupo.codigos.indexOf(itemCodigo) !== -1;
+    return itemCodigo === busqueda;
   }
 
   function filterAndCalculate(items, providersList, rates, opciones, equivalencias) {
@@ -54,7 +57,7 @@
 
     const filtrados = items.filter((item) => {
       const coincideTexto = coincideTextoParcial(opciones.texto, item.repuesto) ||
-        coincideCodigo(opciones.texto, item.codigo, equivalenciasSeguras);
+        coincideCodigo(opciones.texto, item.codigo);
       const coincideMarca = !marca || item.marca.toUpperCase() === marca;
       return coincideTexto && coincideMarca;
     });
