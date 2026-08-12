@@ -295,22 +295,36 @@ function leerEquivalencias() {
   var headerRow = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
   var idxCodigo = headerRow.indexOf('codigo') !== -1 ? headerRow.indexOf('codigo') : headerRow.indexOf('código');
   var idxGrupo = headerRow.indexOf('grupo');
+  // Descripcion/MotorCompleto are optional — web research columns filled in
+  // gradually, group-by-group. Their absence must not break the core
+  // Codigo/Grupo matching that already works.
+  var idxDescripcion = headerRow.indexOf('descripcion') !== -1 ? headerRow.indexOf('descripcion') : headerRow.indexOf('descripción');
+  var idxMotor = headerRow.indexOf('motorcompleto');
   if (idxCodigo === -1 || idxGrupo === -1) return {};
 
-  // First pass: group codes by their "Grupo" value.
+  // First pass: group codes by their "Grupo" value, keeping the first
+  // non-empty Descripcion/MotorCompleto seen for that group (every row in
+  // a group describes the same physical part, so one is enough).
   var grupos = {};
   for (var i = 1; i < values.length; i++) {
     var codigo = String(values[i][idxCodigo] || '').trim().toUpperCase();
     var grupo = String(values[i][idxGrupo] || '').trim();
     if (!codigo || !grupo) continue;
-    if (!grupos[grupo]) grupos[grupo] = [];
-    grupos[grupo].push(codigo);
+    if (!grupos[grupo]) grupos[grupo] = { codigos: [], descripcion: '', motorCompleto: '' };
+    grupos[grupo].codigos.push(codigo);
+    if (!grupos[grupo].descripcion && idxDescripcion !== -1) {
+      grupos[grupo].descripcion = String(values[i][idxDescripcion] || '').trim();
+    }
+    if (!grupos[grupo].motorCompleto && idxMotor !== -1) {
+      grupos[grupo].motorCompleto = String(values[i][idxMotor] || '').trim();
+    }
   }
 
-  // Second pass: expand into codigo -> [every code in its group, including itself].
+  // Second pass: expand into codigo -> { codigos: [every code in its
+  // group, including itself], descripcion, motorCompleto }.
   var equivalencias = {};
   Object.keys(grupos).forEach(function (grupo) {
-    grupos[grupo].forEach(function (codigo) {
+    grupos[grupo].codigos.forEach(function (codigo) {
       equivalencias[codigo] = grupos[grupo];
     });
   });

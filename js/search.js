@@ -39,7 +39,7 @@
     if (!busqueda || !itemCodigo) return false;
     if (itemCodigo === busqueda) return true;
     const grupo = equivalencias[busqueda];
-    return !!grupo && grupo.indexOf(itemCodigo) !== -1;
+    return !!grupo && grupo.codigos.indexOf(itemCodigo) !== -1;
   }
 
   function filterAndCalculate(items, providersList, rates, opciones, equivalencias) {
@@ -67,12 +67,18 @@
         return;
       }
       // Every code in this item's equivalencias group (itself included),
-      // so the UI can show all known equivalent OEM/reference codes
-      // instead of just the one this particular provider happens to use.
-      const grupoEquivalencias = item.codigo && equivalenciasSeguras[item.codigo]
-        ? equivalenciasSeguras[item.codigo]
-        : (item.codigo ? [item.codigo] : []);
-      conCalculo.push({ ...item, ...calculo, codigosEquivalentes: grupoEquivalencias });
+      // plus the web-researched descripción/motor for that group when
+      // available — so the UI can show all known equivalent OEM/reference
+      // codes instead of just the one this particular provider happens to use.
+      const grupoInfo = item.codigo ? equivalenciasSeguras[item.codigo] : null;
+      const codigosEquivalentes = grupoInfo ? grupoInfo.codigos : (item.codigo ? [item.codigo] : []);
+      conCalculo.push({
+        ...item,
+        ...calculo,
+        codigosEquivalentes,
+        descripcionWeb: grupoInfo ? grupoInfo.descripcion : '',
+        motorCompletoWeb: grupoInfo ? grupoInfo.motorCompleto : '',
+      });
     });
 
     conCalculo.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.precioFinalUSD - b.precioFinalUSD);

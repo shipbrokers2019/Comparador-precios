@@ -159,7 +159,7 @@
     // equivalent to it (not just the raw text the user typed) — that's
     // the whole point of searching by code in the first place.
     const grupoBuscado = busquedaCruda && equivalencias[busquedaCruda];
-    const textoLabel = grupoBuscado ? grupoBuscado.join(', ') : (busquedaCruda || 'Todos los repuestos');
+    const textoLabel = grupoBuscado ? grupoBuscado.codigos.join(', ') : (busquedaCruda || 'Todos los repuestos');
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
     document.getElementById('reporte-filtro').innerHTML =
       `<strong>${escapeHtml(textoLabel)}</strong><br>Marca: ${escapeHtml(marcaLabel)}`;
@@ -179,6 +179,8 @@
         ${(r.codigosEquivalentes || []).filter((c) => c !== r.codigo).length
           ? `<div class="report-item-meta">Equivalencia: ${escapeHtml((r.codigosEquivalentes || []).filter((c) => c !== r.codigo).join(', '))}</div>`
           : ''}
+        ${r.descripcionWeb ? `<div class="report-item-meta">Descripción: ${escapeHtml(r.descripcionWeb)}</div>` : ''}
+        ${r.motorCompletoWeb ? `<div class="report-item-meta">Motor: ${escapeHtml(r.motorCompletoWeb)}</div>` : ''}
         <div class="report-item-bs">Bs ${formatMoney(r.precioFinalBs)}</div>
       </div>`).join('');
   }
