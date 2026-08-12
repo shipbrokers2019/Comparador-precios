@@ -11,7 +11,13 @@
   const PALABRAS_CONECTORAS = new Set(['DE', 'DEL', 'LA', 'LAS', 'EL', 'LOS', 'Y', 'CON', 'PARA', 'SIN', 'A']);
 
   function coincideTextoParcial(texto, repuesto) {
-    const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/\s+/).filter(Boolean)
+    // Split on any non-alphanumeric char (not just whitespace) so a dashed
+    // code like "M662A-050" becomes two words ["M662A","050"] — same
+    // tokenization as the repuesto text below. Splitting only on
+    // whitespace treated "M662A-050" as one token that happened to start
+    // with "M662A", matching every size variant (STD/075/100) instead of
+    // just the 050 the user actually typed.
+    const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean)
       .filter((palabra) => !PALABRAS_CONECTORAS.has(palabra));
     if (palabrasBusqueda.length === 0) return true;
     const palabrasRepuesto = String(repuesto || '').toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean);
