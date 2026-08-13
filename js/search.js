@@ -41,26 +41,55 @@
   // match only: expanding to the whole equivalencias group here would
   // also surface sibling size-variant rows of the same manufacturer code
   // (e.g. searching "M043A-075" pulling in "M043A-STD"/"M043A-050"),
-  // which is not what a specific-code search should return. The
-  // cross-supplier equivalencia codes for a matched item are still shown
-  // via codigosEquivalentes below — this only affects what counts as a
-  // search match.
+  // which is not what a specific-code search should return. Cross-provider
+  // equivalents ARE still added as full result cards, just via a separate
+  // step (itemsEquivalentesOtrasMarcas below) that excludes same-provider
+  // group members instead of blindly expanding the whole group here.
   function coincideCodigo(texto, itemCodigo) {
     const busqueda = String(texto || '').trim().toUpperCase();
     if (!busqueda || !itemCodigo) return false;
     return itemCodigo === busqueda;
   }
 
+  // When the search text is itself an exact code, also pull in that code's
+  // cross-provider equivalents (different proveedor => different brand, in
+  // practice) as full separate result cards — not just the informational
+  // "Equivalencia OEM" tag — so the user can compare final price across
+  // suppliers for the same physical part. Same-provider items in the same
+  // group are excluded on purpose: a provider only lists its own brand's
+  // rows, so a same-provider group member is a size variant of the
+  // identical code (e.g. M043A-STD next to M043A-075), not a different
+  // brand's equivalent part.
+  function itemsEquivalentesOtrasMarcas(items, texto, equivalencias) {
+    const busqueda = String(texto || '').trim().toUpperCase();
+    if (!busqueda) return [];
+    const encontrados = [];
+    items.forEach((item) => {
+      if (item.codigo !== busqueda) return;
+      const grupo = equivalencias[item.codigo];
+      if (!grupo) return;
+      items.forEach((candidato) => {
+        if (candidato.proveedor === item.proveedor) return;
+        if (grupo.codigos.indexOf(candidato.codigo) === -1) return;
+        encontrados.push(candidato);
+      });
+    });
+    return encontrados;
+  }
+
   function filterAndCalculate(items, providersList, rates, opciones, equivalencias) {
     const marca = (opciones.marca || '').trim().toUpperCase();
     const equivalenciasSeguras = equivalencias || {};
 
-    const filtrados = items.filter((item) => {
+    const filtradosPorTexto = items.filter((item) => {
       const coincideTexto = coincideTextoParcial(opciones.texto, item.repuesto) ||
         coincideCodigo(opciones.texto, item.codigo);
       const coincideMarca = !marca || item.marca.toUpperCase() === marca;
       return coincideTexto && coincideMarca;
     });
+    const equivalentesCruzados = itemsEquivalentesOtrasMarcas(items, opciones.texto, equivalenciasSeguras)
+      .filter((item) => filtradosPorTexto.indexOf(item) === -1);
+    const filtrados = filtradosPorTexto.concat(equivalentesCruzados);
 
     const conCalculo = [];
     const proveedoresSinTasa = new Set();
