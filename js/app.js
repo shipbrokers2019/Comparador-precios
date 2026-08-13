@@ -159,7 +159,15 @@
     // equivalent to it (not just the raw text the user typed) — that's
     // the whole point of searching by code in the first place.
     const grupoBuscado = busquedaCruda && equivalencias[busquedaCruda];
-    const textoLabel = grupoBuscado ? grupoBuscado.codigos.join(', ') : (busquedaCruda || 'Todos los repuestos');
+    // Same measure-matching restriction as the per-card "Equivalencia OEM"
+    // tag: a Grupo now holds every measure variant from every provider, so
+    // showing the raw list here would dump every size of every brand into
+    // the page title instead of just the ones matching the code searched.
+    const medidaBuscada = busquedaCruda ? App.search.medidaNormalizada(busquedaCruda) : null;
+    const codigosGrupoBuscado = grupoBuscado
+      ? (medidaBuscada ? grupoBuscado.codigos.filter((c) => App.search.medidaNormalizada(c) === medidaBuscada) : grupoBuscado.codigos)
+      : null;
+    const textoLabel = codigosGrupoBuscado ? codigosGrupoBuscado.join(', ') : (busquedaCruda || 'Todos los repuestos');
     const marcaLabel = opciones.marca.trim() ? opciones.marca.trim() : 'Todas';
     document.getElementById('reporte-filtro').innerHTML =
       `<strong>${escapeHtml(textoLabel)}</strong><br>Marca: ${escapeHtml(marcaLabel)}`;

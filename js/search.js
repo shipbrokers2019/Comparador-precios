@@ -152,5 +152,5 @@
     return { resultados: conCalculo, proveedoresSinTasa: [...proveedoresSinTasa] };
   }
 
-  window.App.search = { filterAndCalculate };
+  window.App.search = { filterAndCalculate, medidaNormalizada };
 })();
