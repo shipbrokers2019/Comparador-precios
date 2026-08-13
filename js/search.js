@@ -20,7 +20,14 @@
     const palabrasBusqueda = String(texto || '').trim().toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean)
       .filter((palabra) => !PALABRAS_CONECTORAS.has(palabra));
     if (palabrasBusqueda.length === 0) return true;
-    const palabrasRepuesto = String(repuesto || '').toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean);
+    // Expand known brand abbreviations in the description before matching
+    // (e.g. Tahio writes "TOY" instead of "TOYOTA") — otherwise a 3-letter
+    // abbreviation never clears the 4-letter minimum below for a reverse
+    // prefix match, so searching "toyota" would silently miss every Tahio
+    // row even though the marca dictionary already knows TOY = TOYOTA.
+    const dictMarca = (App.dictionaries && App.dictionaries.getAll().marca) || {};
+    const palabrasRepuesto = String(repuesto || '').toUpperCase().split(/[^A-ZÁÉÍÓÚÑ0-9]+/).filter(Boolean)
+      .map((palabra) => dictMarca[palabra] || palabra);
     // The "search word starts with repuesto word" direction only counts
     // when the repuesto word is at least 4 letters — otherwise short
     // connector words in the description ("CON", "DE", "LA") would
