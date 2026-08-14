@@ -155,7 +155,11 @@
       });
     });
 
-    conCalculo.sort((a, b) => a.proveedor.localeCompare(b.proveedor) || a.precioFinalUSD - b.precioFinalUSD);
+    // Cheapest first: the whole point of comparing across providers is to
+    // see who has the best price, so price is the primary sort key (was
+    // provider name first, price second — Ebiten's $28.35 sorted above
+    // LP's $10.49 purely because "Ebiten" < "Lp" alphabetically).
+    conCalculo.sort((a, b) => a.precioFinalUSD - b.precioFinalUSD || a.proveedor.localeCompare(b.proveedor));
     return { resultados: conCalculo, proveedoresSinTasa: [...proveedoresSinTasa] };
   }
 
